@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
@@ -7,8 +8,6 @@ import 'package:gamify_test/on_boarding/utils/auth_cubit.dart';
 import 'package:gamify_test/utils/constants.dart';
 import 'package:gamify_test/utils/widgets.dart';
 import 'package:go_router/go_router.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-import 'package:intl/intl.dart';
 import 'package:toggle_switch/toggle_switch.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
@@ -84,6 +83,15 @@ class _UserAuthenticationState extends State<UserAuthentication> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              // SegmentedButton<String>(segments: const [
+              //   ButtonSegment<String>(value: "signIn",enabled: true,label: AutoSizeText("Sign In")),
+              //   ButtonSegment<String>(value: "signUp",enabled: true,label: AutoSizeText("Sign Up")),
+              // ], selected: const {"signIn"},
+              //   style: SegmentedButton.styleFrom(
+              //     fixedSize: Size.fromWidth(MediaQuery.sizeOf(context).width * 0.7)
+              //   ),
+              //   // expandedInsets: EdgeInsets.zero,
+              // ),
               DecoratedBox(
                 decoration: BoxDecoration(
                     color: Colors.grey.shade200,
@@ -362,6 +370,10 @@ class _UserAuthenticationState extends State<UserAuthentication> {
               );
             },
           ),
+          const SizedBox(height: 4,),
+          AutoSizeText("Please select your current level of education",style: Theme.of(context).textTheme.labelMedium!.copyWith(
+            color: Colors.grey
+          ),),
           const Divider(
             color: Colors.transparent,
           ),
@@ -484,15 +496,6 @@ class _UserAuthenticationState extends State<UserAuthentication> {
           ),
           BlocConsumer<AuthCubit, AuthStates>(
             listener: (context, state) {
-              if (state is AuthSuccessState) {
-                Hive.box(userDataDB).put("personalInfo", {
-                  "name": _name.text.trim(),
-                  "email": _email.text.trim(),
-                  "phone_no": _phone.text,
-                  "first_login":
-                  DateFormat('yyyy-MM-dd').format(DateTime.now()),
-                });
-              }
               if (state is AuthErrorState) {
                 showDialog(
                   context: context,
@@ -527,11 +530,13 @@ class _UserAuthenticationState extends State<UserAuthentication> {
                     if (signUpFormKey.currentState!.validate()) {
                       if (agree.value) {
                         context.read<AuthCubit>().authenticate(
-                            _name.text,
-                            _email.text,
-                            _password.text,
-                            _phone.text,
+                            _name.text.replaceAll(" ", "_").trim(),
+                            _email.text.trim(),
+                            _password.text.trim(),
+                            _phone.text.trim(),
                             selectedQualification.value.replaceAll(" ", "_"));
+                      } else {
+                        snackBarKey.currentState?.showSnackBar(const SnackBar(content: AutoSizeText("You must agree to our terms and conditions.")));
                       }
                     }
                   } else {

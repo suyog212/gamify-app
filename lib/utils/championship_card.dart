@@ -2,6 +2,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gamify_test/blocs/question_bloc.dart';
 import 'package:gamify_test/models/championship_details_model.dart';
@@ -102,8 +103,6 @@ class _ChampionshipInformationCardState
                 height: MediaQuery.sizeOf(context).height * 0.5,
                 width: MediaQuery.sizeOf(context).width,
                 child: AlertDialog(
-                  insetPadding: EdgeInsets.zero,
-                  contentPadding: EdgeInsets.zero,
                   title: Text(widget.categoryName),
                   content: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -118,16 +117,16 @@ class _ChampionshipInformationCardState
                               .copyWith(fontWeight: FontWeight.w600),
                           children: [
                             TextSpan(text: '''
-                    1. All questions are compulsory
-                    2. Navigating through questions is not allowed.
-                    3. Can be played only once. Ensure you have stable internet connection
+1. All questions are compulsory
+2. Navigating through questions is not allowed.
+3. Can be played only once. Ensure you have stable internet connection
                             ''', style: Theme.of(context).textTheme.titleSmall),
                           ],
                         ),
                       ),
                       // ignore: prefer_const_constructors
-                      // if (widget.modeName == "play_win_gift")
-                      if (false)
+                      if (widget.modeName == "play_win_gift")
+                      // if (false)
                         const Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
@@ -144,8 +143,8 @@ class _ChampionshipInformationCardState
                   actions: [
                     FilledButton(
                         onPressed: () {
-                          int userId = int.parse(Hive.box(userDataDB)
-                              .get("personalInfo")['user_id']);
+                          var userId = Hive.box(userDataDB)
+                              .get("personalInfo")['user_id'];
                           context.read<QuestionsBloc>().getQuestions(
                               widget.modeId,
                               widget.categoryName,
@@ -241,8 +240,8 @@ class _ChampionshipInformationCardState
                 title: Text(
                   widget.categoryName,
                   style: Theme.of(context).textTheme.titleLarge,
-                ),
-                subtitle: Text(widget.champName),
+                ).animate().slideX(),
+                subtitle: Text(widget.champName).animate().slideY(),
                 trailing: LayoutBuilder(
                   builder: (context, constraints) {
                     if (DateTime.parse(formattedStartDate.toString())

@@ -21,10 +21,10 @@ class QuestionViewCubit  extends Cubit<QuestionViewStates>{
 
   QuestionsRepository questionsRepository = QuestionsRepository();
 
-  void submitQuestion(int questionId,String timeTaken,String expectedTime,double pointsEarned,String correctAns,String submittedAns) async {
+  void submitQuestion(int questionId,String timeTaken,String expectedTime,double pointsEarned,String correctAns,String submittedAns,int champId) async {
     emit(QuestionViewLoadingState());
     try{
-      int statusCode = await questionsRepository.sendQuestionData(questionId, timeTaken, expectedTime, pointsEarned, correctAns,submittedAns);
+      int statusCode = await questionsRepository.sendQuestionData(questionId, timeTaken, expectedTime, pointsEarned, correctAns,champId,submittedAns);
       if(statusCode == 201){
         emit(QuestionViewAnsweredState());
         emit(QuestionViewInitialState());
@@ -36,7 +36,7 @@ class QuestionViewCubit  extends Cubit<QuestionViewStates>{
     }
   }
 
-  void submitChampionshipResult(String gameMode, int totalNegative, int champId,double totalBonus, double totalPenalty, double totalScore, String timeTaken, String expectedTime, String userId,int totalQuestion, int correctQuestion) async {
+  void submitChampionshipResult(String gameMode, double totalNegative, int champId,double totalBonus, double totalPenalty, double totalScore, String timeTaken, String expectedTime, dynamic userId,int totalQuestion, int correctQuestion) async {
     try {
       await questionsRepository.submitChampData(gameMode, totalNegative, champId, totalBonus, totalPenalty, totalScore, timeTaken, expectedTime, userId, totalQuestion, correctQuestion);
       emit(ResultSubmittedState());

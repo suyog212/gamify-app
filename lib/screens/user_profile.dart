@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:gamify_test/on_boarding/utils/auth_handler.dart';
 import 'package:gamify_test/utils/constants.dart';
 import 'package:hive_flutter/adapters.dart';
 
@@ -519,6 +520,20 @@ class _UserProfileState extends State<UserProfile> {
                                               onPressed: () {
                                                 if (formKey.currentState!
                                                     .validate()) {
+                                                  AuthHandler()
+                                                      .saveUserQualification(
+                                                      qualification,
+                                                      schoolName.text,
+                                                      board.text,
+                                                      int.parse(
+                                                          passingYear
+                                                              .text),
+                                                      double.parse(
+                                                          percentage
+                                                              .text),
+                                                      pursuing
+                                                          ? 1
+                                                          : 0,Hive.box(userDataDB).get("personalInfo")['user_id']);
                                                   Hive.box(qualificationDataDB)
                                                       .put(qualification, {
                                                     "SchoolName":

@@ -1,8 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gamify_test/blocs/championship_analytics_cubit.dart';
 import 'package:gamify_test/blocs/championships_details_bloc.dart';
 import 'package:gamify_test/blocs/internet_cubit.dart';
+import 'package:gamify_test/blocs/question_analytics_cubit.dart';
 import 'package:gamify_test/blocs/question_bloc.dart';
 import 'package:gamify_test/blocs/question_view_cubit.dart';
 import 'package:gamify_test/blocs/theme_cubit.dart';
@@ -26,6 +28,7 @@ void main() async {
   await Hive.openBox(userDataDB);
   await Hive.openBox(quizDataDB);
   await Hive.openBox(qualificationDataDB);
+  // debugPaintSizeEnabled = true;
   runApp(const MyApp());
 }
 
@@ -50,7 +53,9 @@ class _MyAppState extends State<MyApp> {
         BlocProvider(create: (context) => InternetCubit(),),
         BlocProvider(create: (context) => ChampionshipsBloc(),),
         BlocProvider(create: (context) => QuestionsBloc(),),
-        BlocProvider(create: (context) => QuestionViewCubit(),)
+        BlocProvider(create: (context) => QuestionViewCubit(),),
+        BlocProvider(create: (context) => ChampionshipAnalyticsCubit(),),
+        BlocProvider(create: (context) => QuestionAnalyticsCubit(),)
       ],
       child: BlocBuilder<InternetCubit, InternetStates>(
         builder: (context, state) {
@@ -59,6 +64,7 @@ class _MyAppState extends State<MyApp> {
               return BlocBuilder<ThemeCubit, ThemeMode>(
                 builder: (context, themeMode) {
                   return MaterialApp.router(
+                    showSemanticsDebugger: false,
                     routerConfig: AppRouter().router,
                     title: 'kGamify',
                     theme: appTheme.lightTheme,

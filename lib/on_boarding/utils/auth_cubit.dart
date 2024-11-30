@@ -28,13 +28,21 @@ class AuthCubit extends Cubit<AuthStates>{
       Response status = await authHandler.registerUser(name, email, password, phone, qualification);
       emit(AuthInProgressState());
       if(status.statusCode == 201){
-        debugPrint("User Created Successfully");
-       signInUser(email, password);
+        await Hive.box(userDataDB).put("personalInfo", {
+          "user_id": status.data['user_id'],
+          "name": name,
+          "email": email,
+          "password": password,
+          "user_qualification": qualification,
+          "user_key": status.data['user_key'],
+          "phone_no": phone,
+          "first_login": DateTime.now().toString(),
+          "recent_login": DateTime.now().toString(),
+        });
+        await Hive.box(userDataDB).put("isLoggedIn", true);
+        emit(AuthSuccessState());
       }
-      if(status.statusCode == 409){
-        emit(AuthErrorState(status.statusMessage.toString()));
-      }
-    }catch (e) {
+    }on Exception catch (e) {
       emit(AuthErrorState(e.toString()));
       emit(AuthInitialState());
     }
@@ -49,21 +57,34 @@ class AuthCubit extends Cubit<AuthStates>{
         await Hive.box(userDataDB)
             .put("personalInfo", {
           "user_id": data.values.elementAt(0),
-          "name": data.values.elementAt(1),
-          "email": data.values.elementAt(2),
+          "name": data.values.elementAt(2),
+          "email": data.values.elementAt(1),
           "password": data.values.elementAt(3),
           "user_qualification": data.values.elementAt(4),
           "user_key": data.values.elementAt(5),
           "phone_no": data.values.elementAt(6),
           "first_login": data.values.elementAt(7),
-          "recent_login": data.values.elementAt(8)
+          "recent_login": data.values.elementAt(8),
+          "city" : data['location']
         });
+
+        String interests = data['interests'];
+        await Hive.box(userDataDB).put("interests", interests.split(","));
+        List<dynamic> qualifications = data['qualifications'];
+        qualifications.forEach((e) async => await Hive.box(qualificationDataDB).put(e['user_qualification'], {
+          "SchoolName": e['institute_name'],
+          "Board": e['board_name'],
+          "percentage": e['percentage'],
+          "PassingYear": e['passing_year'],
+          "HighestEd": e['is_highest'] == 1 ? true : false
+        }),);
+        // print(Hive.box(userDataDB).get("personalInfo"));
           await Hive.box(userDataDB).put("isLoggedIn", true);
           emit(AuthSuccessState());
       } else {
         debugPrint("Something went wrong");
       }
-    } catch (e) {
+    } on Exception catch (e) {
       emit(AuthErrorState(e.toString()));
       emit(AuthInitialState());
     }

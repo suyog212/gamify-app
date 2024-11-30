@@ -1,5 +1,4 @@
-import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
+import 'package:gamify_test/models/questions_models.dart';
 import 'package:gamify_test/on_boarding/locale_selection.dart';
 import 'package:gamify_test/on_boarding/personal_info.dart';
 import 'package:gamify_test/on_boarding/user_authentication.dart';
@@ -13,11 +12,6 @@ import 'package:gamify_test/screens/user_profile.dart';
 import 'package:gamify_test/utils/constants.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/adapters.dart';
-
-Future<bool> checkUserLogin(String email,String password) async {
-  Response response = await Dio().post("https://kgamify.in/teacheradminpanel/apis/check_user_data.php?email=$email&password=$password");
-  return response.statusCode == 200;
-}
 
 class AppRouter {
   static final GoRouter _router = GoRouter(routes: [
@@ -40,7 +34,7 @@ class AppRouter {
             champId: args['champ_id'],
           expectedTime: args['expected_time'],
           gameMode: args['game_mode'],
-          questionsList: args['questions_list'],
+          questionsList: args['questions_list'] as List<QuestionsDetailsModel>,
           seconds: args['seconds'],
           teacherName: args['teacher_name'],
         );
@@ -76,14 +70,9 @@ class AppRouter {
     GoRoute(
         path: "/landingPage",
         builder: (context, state) => const HomeScreen(),
-        redirect: (context, state) async {
-          Box box = Hive.box("UserData");
-          if(await checkUserLogin(box.get("personalInfo")['email'], box.get("personalInfo")['password'])){
-            await Hive.box(userDataDB).clear();
-            await Hive.box(quizDataDB).clear();
-            await Hive.box(qualificationDataDB).clear();
-            snackBarKey.currentState?.showSnackBar(const SnackBar(content: Text("User logged out")));
-          }
+        redirect: (context, state) {
+          // final data = Hive.box(userDataDB).get("personalInfo");
+          // context.read<AuthCubit>().signInUser(data['email'], data['password']);
           return null;
         },
         routes: [
@@ -98,7 +87,10 @@ class AppRouter {
               routes: [
                 GoRoute(
                   path: "quizAnalytics",
-                  builder: (context, state) => const QuizAnalytics(),
+                  builder: (context, state) {
+                    Map<String,dynamic> args = state.extra as Map<String,dynamic>;
+                    return QuizAnalytics(analyticsData: args['data'],);
+                  },
                 )
               ])
         ]),

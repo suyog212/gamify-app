@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:developer';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gamify_test/blocs/question_view_cubit.dart';
@@ -36,7 +38,7 @@ class _QuestionViewState extends State<QuestionView> {
   final Box userData = Hive.box(userDataDB);
 
   final PageController _pageController = PageController();
-  final double _champScore = 0;
+  double _champScore = 0;
   Timer? _quizTimer;
   final Stopwatch _questionTimer = Stopwatch();
   final ValueNotifier<int> _timer = ValueNotifier(0);
@@ -52,7 +54,7 @@ class _QuestionViewState extends State<QuestionView> {
 
   //ChampResult
   int correctAnswers = 0;
-  int totalNegativeMarks = 0;
+  double totalNegativeMarks = 0;
   double totalBonus = 0;
   double totalPenalty = 0;
 
@@ -62,6 +64,7 @@ class _QuestionViewState extends State<QuestionView> {
     _quizTimer = Timer.periodic(
       const Duration(seconds: 1),
       (ticker) {
+        // print(_questionTimer.elapsed.inSeconds);
         // print(ticker.tick);
         if (_timer.value - 1 > 0) {
           _timer.value--;
@@ -70,7 +73,7 @@ class _QuestionViewState extends State<QuestionView> {
           _answerSubmissionHandler.submitChampionShip(
               context: context,
               gameMode: widget.gameMode,
-              totalNegative: _answerSubmissionHandler.questionsMarkedWrong,
+              totalNegative: totalNegativeMarks,
               champId: widget.champId,
               totalBonus: totalBonus,
               totalPenalty: totalPenalty,
@@ -85,6 +88,7 @@ class _QuestionViewState extends State<QuestionView> {
         }
       },
     );
+    _questionTimer.start();
     // TODO: implement initState
     super.initState();
   }
@@ -111,8 +115,17 @@ class _QuestionViewState extends State<QuestionView> {
           appBar: AppBar(
             title: Text(widget.champName),
             actions: [
+              if(kDebugMode) IconButton(onPressed: () {
+                log(totalPenalty.toString());
+                debugPrint(totalNegativeMarks.toString());
+                debugPrint(totalBonus.toString());
+                debugPrint(correctAnswers.toString());
+                debugPrint(_champScore.toString());
+                debugPrint(_submittedQuestions.value.toString());
+              }, icon: const Icon(Icons.terminal)),
               IconButton(
                   onPressed: () {
+                    // snackBarKey.currentState?.showSnackBar(const SnackBar(content: AutoSizeText("")));
                     context.go("/landingPage");
                   },
                   icon: const Icon(Icons.close))
@@ -228,20 +241,20 @@ class _QuestionViewState extends State<QuestionView> {
                           itemBuilder: (context, buttonIndex) {
                             return InkWell(
                               onTap: () {
-                                if (widget.questionsList
-                                        .elementAt(index)
-                                        .correctAnswer!
-                                        .length >
-                                    1) {
+                                if (widget.questionsList.elementAt(index).correctAnswer!.length >1) {
                                   if (value.contains(buttonIndex)) {
                                     _selectedAns.value.remove(buttonIndex);
+                                  } else if (buttonIndex == 4 ){
+                                    value.clear();
+                                    value.add(buttonIndex);
                                   } else {
                                     _selectedAns.value.add(buttonIndex);
                                   }
                                 } else {
                                   if (value.contains(buttonIndex)) {
                                     _selectedAns.value.remove(buttonIndex);
-                                  } else {
+                                  }
+                                  else {
                                     if (_selectedAns.value.isNotEmpty) {
                                       _selectedAns.value.removeLast();
                                     }
@@ -327,6 +340,7 @@ class _QuestionViewState extends State<QuestionView> {
                                     correctQuestion: correctAnswers);
                               } else {
                                 quizData.add({
+                                  "question" : widget.questionsList.elementAt(index).questionText,
                                   "isCorrect" : _scoreEngine.scoreMultiplierCalculator(
                                       widget.questionsList
                                           .elementAt(index)
@@ -338,6 +352,12 @@ class _QuestionViewState extends State<QuestionView> {
                                   "correctAns" : widget.questionsList.elementAt(index).correctAnswer,
                                   "expectedTime" : widget.questionsList.elementAt(index).expectedTime
                                 });
+                                _champScore += _scoreEngine.calculateScoreForCorrectAnswer(
+                                    int.parse(widget.questionsList.elementAt(index).expectedTime!) * 60,
+                                    _questionTimer.elapsed.inSeconds,
+                                    int.parse(widget.questionsList.elementAt(index).totalCoins!).toDouble(),
+                                    true,
+                                    -int.parse(widget.questionsList.elementAt(index).totalCoins!));
                                 if (_selectedAns.value.contains(4)) {
                                   _answerSubmissionHandler
                                       .onSubmittedQuestionWrong(
@@ -346,7 +366,7 @@ class _QuestionViewState extends State<QuestionView> {
                                         widget.questionsList
                                             .elementAt(index)
                                             .correctAnswer!,
-                                        _selectedAns.value) == 1) {
+                                    _selectedAns.value.map((e) => e + 1,).toList()) == 1) {
                                   correctAnswers += 1;
                                   final currData = widget.questionsList.elementAt(index);
                                   _answerSubmissionHandler.sendQuestionData(context,
@@ -354,30 +374,40 @@ class _QuestionViewState extends State<QuestionView> {
                                       timeTaken: _questionTimer.elapsed.inSeconds,
                                       expectedTime: int.parse(currData.expectedTime!),
                                       perQuestionCoins: _scoreEngine.calculateScoreForCorrectAnswer(
-                                          int.parse(currData.expectedTime!),
+                                          int.parse(currData.expectedTime!) * 60,
                                           _questionTimer.elapsed.inSeconds,
                                           int.parse(currData.totalCoins!).toDouble(),
                                           true,
                                           -int.parse(currData.totalCoins!)),
                                       correctAns: currData.correctAnswer!,
-                                      submittedAns: _selectedAns.value.map((e) => e + 1,).toList().join(",")
+                                      submittedAns: _selectedAns.value.map((e) => e + 1,).toList().join(","),
+                                    champId: widget.champId
                                   );
+                                  totalBonus += _questionTimer.elapsed.inSeconds/(int.parse(currData.expectedTime!) * 60);
                                   debugPrint("Correct");
                                 } else {
+                                  totalNegativeMarks += 1;
                                   final currData = widget.questionsList.elementAt(index);
                                   _answerSubmissionHandler.sendQuestionData(context,
                                       questionId: int.parse(currData.questionId!),
                                       timeTaken: _questionTimer.elapsed.inSeconds,
                                       expectedTime: int.parse(currData.expectedTime!),
                                       perQuestionCoins: _scoreEngine.calculateScoreForCorrectAnswer(
-                                          int.parse(currData.expectedTime!),
+                                          int.parse(currData.expectedTime!) * 60,
                                           _questionTimer.elapsed.inSeconds,
                                           int.parse(currData.totalCoins!).toDouble(),
                                           false,
                                           -int.parse(currData.totalCoins!)),
                                       correctAns: currData.correctAnswer!,
-                                      submittedAns: _selectedAns.value.map((e) => e + 1,).toList().join(",")
+                                      submittedAns: _selectedAns.value.map((e) => e + 1,).toList().join(","),
+                                    champId: widget.champId
                                   );
+                                  totalPenalty += _scoreEngine.calculateScoreForCorrectAnswer(
+                                      int.parse(currData.expectedTime!) * 60,
+                                      _questionTimer.elapsed.inSeconds,
+                                      int.parse(currData.totalCoins!).toDouble(),
+                                      false,
+                                      -int.parse(currData.totalCoins!));
                                   debugPrint("Wrong");
                                 }
                               }
@@ -388,6 +418,41 @@ class _QuestionViewState extends State<QuestionView> {
                       },
                       listener: (context, state) {
                         if (state is QuestionViewAnsweredState) {
+                          debugPrint("${_submittedQuestions.value} ${widget.questionsList.length}");
+                          if (_submittedQuestions.value ==
+                              widget.questionsList.length) {
+                            // Hive.box(quizDataDB).put(DateTime.now().toString(), {
+                            //   "gameMode" : widget.gameMode,
+                            //   "totalNegativePoints" : totalNegativeMarks,
+                            //   "champId" : widget.champId,
+                            //   "champName" : widget.champName,
+                            //   "totalBonus" : totalBonus,
+                            //   "totalPenalty" : totalPenalty,
+                            //   "totalScore" : _champScore,
+                            //   "timeTaken" : _quizTimer!.tick,
+                            //   "expectedTime" : widget.expectedTime,
+                            //   "totalQuestions" : widget.questionsList.length,
+                            //   "teacherName" : widget.teacherName,
+                            //   "questionData" : quizData
+                            // });
+                            _answerSubmissionHandler.onChampSubmit(
+                                context: context,
+                                gameMode: widget.gameMode,
+                                totalNegative: totalNegativeMarks,
+                                champId: widget.champId,
+                                totalBonus: totalBonus,
+                                totalPenalty: totalPenalty,
+                                totalScore: _champScore,
+                                timeTaken: _answerSubmissionHandler
+                                    .quizSubmissionTime(_quizTimer!.tick),
+                                expectedTime: _answerSubmissionHandler
+                                    .quizSubmissionTime(
+                                    widget.expectedTime * 60),
+                                userId:
+                                userData.get("personalInfo")['user_id'],
+                                totalQuestion: widget.questionsList.length,
+                                correctQuestion: correctAnswers);
+                          }
                           _selectedAns.value = [];
                           _submittedQuestions.value += 1;
                           _pageController.nextPage(
@@ -449,7 +514,7 @@ class AnswerSubmissionHandler {
   void submitChampionShip(
       {required BuildContext context,
       required String gameMode,
-      required int totalNegative,
+      required double totalNegative,
       required int champId,
       required double totalBonus,
       required double totalPenalty,
@@ -476,14 +541,14 @@ class AnswerSubmissionHandler {
   void onChampSubmit(
       {required BuildContext context,
       required String gameMode,
-      required int totalNegative,
+      required double totalNegative,
       required int champId,
       required double totalBonus,
       required double totalPenalty,
       required double totalScore,
       required String timeTaken,
       required String expectedTime,
-      required String userId,
+      required dynamic userId,
       required int totalQuestion,
       required int correctQuestion}) {
     showDialog(
@@ -550,6 +615,7 @@ class AnswerSubmissionHandler {
       required int expectedTime,
         required double perQuestionCoins,
       required String correctAns,
+        required int champId,
       required String submittedAns}) {
     context.read<QuestionViewCubit>().submitQuestion(
         questionId,
@@ -557,7 +623,8 @@ class AnswerSubmissionHandler {
         quizSubmissionTime(expectedTime),
         perQuestionCoins,
         correctAns,
-        submittedAns
+        submittedAns,
+        champId
     );
   }
 }

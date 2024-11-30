@@ -79,7 +79,7 @@ class _QuizResultState extends State<QuizResult> {
               OutlinedButton(onPressed: () {
                 context.go("/landingPage/analytics");
               }, child: const Text("View analytics")),
-              const Divider(color: Colors.transparent,),
+              // const Divider(color: Colors.transparent,),
               FilledButton(onPressed: () {
                 context.go("/landingPage");
               }, child: const Text("Explore championships"))

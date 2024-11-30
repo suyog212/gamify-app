@@ -37,7 +37,7 @@ class InternetCubit extends Cubit<InternetStates>{
           actions: [
         TextButton(onPressed: () {
           checkConnection();
-        }, child: const Text("Retry"))
+        }, child: const Text(""))
       ]));
     } else {
       snackBarKey.currentState?.clearMaterialBanners();
