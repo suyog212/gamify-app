@@ -5,10 +5,11 @@ import 'package:csc_picker/csc_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:gamify_test/on_boarding/utils/auth_handler.dart';
-import 'package:gamify_test/utils/constants.dart';
-import 'package:gamify_test/utils/widgets.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:kGamify/on_boarding/utils/auth_handler.dart';
+import 'package:kGamify/utils/constants.dart';
+import 'package:kGamify/utils/router.dart';
+import 'package:kGamify/utils/widgets/widgets.dart';
 
 class PersonalInfoInput extends StatefulWidget {
   const PersonalInfoInput({super.key});
@@ -77,13 +78,11 @@ class _PersonalInfoInputState extends State<PersonalInfoInput> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
   }
 
   @override
   void dispose() {
-    // TODO: implement dispose
     _name.dispose();
     _email.dispose();
     _age.dispose();
@@ -97,6 +96,9 @@ class _PersonalInfoInputState extends State<PersonalInfoInput> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppRouter().router?.state!.fullPath == "/landingPage/profile/personalInfoEdit" ? AppBar(
+
+      ) : null,
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(16),
@@ -714,9 +716,10 @@ class _PersonalInfoInputState extends State<PersonalInfoInput> {
                     _name.text,
                     _email.text,
                     _age.text,
-                    "$city, $state, $country",
+                    "$city,$state,$country",
                     _phone.text,
-                    interests.join(","));
+                    Hive.box(userDataDB).get("interests").join(",")
+                );
                 Map<dynamic, dynamic> data =
                     Hive.box(userDataDB).get("personalInfo");
                 // print(data['age']);

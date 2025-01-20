@@ -63,6 +63,13 @@ class ChampionshipDetails {
   String? teacherId;
   String? teacherName;
   String? uploadImg;
+  String? giftImage;
+  String? noOfUsersPlayed;
+  String? userQualification;
+  String? gameModeRules;
+  String? giftDescription;
+  String? questionCount;
+  String? uniqueId;
   TeacherDetailsModel? teacherDetailsModel;
 
   ChampionshipDetails(
@@ -83,7 +90,15 @@ class ChampionshipDetails {
         this.teacherId,
         this.teacherDetailsModel,
         this.uploadImg,
-        this.teacherName});
+        this.teacherName,
+        this.giftImage,
+         this.noOfUsersPlayed,
+         this.userQualification,
+         this.gameModeRules,
+        this.giftDescription,
+        this.questionCount,
+        this.uniqueId
+      });
 
   ChampionshipDetails.fromJson(Map<String, dynamic> json) {
     modeId = json['mode_id'];
@@ -102,6 +117,10 @@ class ChampionshipDetails {
     categoryStatus = json['category_status'];
     teacherId = json['teacher_id'];
     teacherName = json['teacher_name'];
+    giftImage = json['gift_image'];
+    noOfUsersPlayed = json[''];
+    userQualification = json[''];
+    gameModeRules = json[''];
   }
 
   Map<String, dynamic> toJson() {
@@ -122,6 +141,10 @@ class ChampionshipDetails {
     data['category_status'] = categoryStatus;
     data['teacher_id'] = teacherId;
     data['teacher_name'] = teacherName;
+    data['gift_image'] = giftImage;
+    data[''] = noOfUsersPlayed;
+    data[''] = userQualification;
+    data[''] = gameModeRules;
     return data;
   }
 }
@@ -140,6 +163,7 @@ class TeacherDetailsModel {
   String? uploadImg;
   Null verifyToken;
   String? createdAt;
+  String? champsCreated;
 
   TeacherDetailsModel(
       {required this.teacherId,
@@ -154,7 +178,9 @@ class TeacherDetailsModel {
         required this.department,
         required this.uploadImg,
         this.verifyToken,
-        required this.createdAt});
+        required this.createdAt,
+        this.champsCreated
+      });
 
   TeacherDetailsModel.fromJson(Map<String, dynamic> json) {
     teacherId = json['teacher_id'];
@@ -170,6 +196,7 @@ class TeacherDetailsModel {
     uploadImg = json['upload_img'];
     verifyToken = json['verify_token'];
     createdAt = json['created_at'];
+    champsCreated = json['championship_count'];
   }
 
   Map<String, dynamic> toJson() {
@@ -187,6 +214,7 @@ class TeacherDetailsModel {
     data['upload_img'] = uploadImg;
     data['verify_token'] = verifyToken;
     data['created_at'] = createdAt;
+    data['championship_count'] = champsCreated;
     return data;
   }
 }

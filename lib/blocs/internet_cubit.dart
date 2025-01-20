@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:gamify_test/utils/constants.dart';
+import 'package:kGamify/utils/constants.dart';
 
 abstract class InternetStates {}
 
@@ -15,6 +15,7 @@ class InternetInitialState extends InternetStates {}
 
 class InternetCubit extends Cubit<InternetStates>{
   InternetCubit() : super(InternetInitialState()){
+    
     _streamSubscription = _connectivity.onConnectivityChanged.listen((event) {
       if(event.contains(ConnectivityResult.mobile) || event.contains(ConnectivityResult.wifi)){
         emit(InternetAvailableState());
@@ -46,7 +47,6 @@ class InternetCubit extends Cubit<InternetStates>{
 
   @override
   Future<void> close() {
-    // TODO: implement close
     _streamSubscription?.cancel();
     return super.close();
   }

@@ -1,16 +1,18 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:email_validator/email_validator.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:gamify_test/on_boarding/utils/auth_cubit.dart';
-import 'package:gamify_test/utils/constants.dart';
-import 'package:gamify_test/utils/widgets.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:kGamify/generated/l10n.dart';
+import 'package:kGamify/on_boarding/utils/auth_cubit.dart';
+import 'package:kGamify/utils/constants.dart';
+import 'package:kGamify/utils/widgets/widgets.dart';
 import 'package:toggle_switch/toggle_switch.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:url_launcher/url_launcher_string.dart';
 
 class UserAuthentication extends StatefulWidget {
   const UserAuthentication({super.key});
@@ -59,7 +61,8 @@ class _UserAuthenticationState extends State<UserAuthentication> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(child: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        physics: const BouncingScrollPhysics(),
+        // padding: const EdgeInsets.symmetric(horizontal: 16),
         children: [
           const SizedBox(
             height: kToolbarHeight,
@@ -83,15 +86,6 @@ class _UserAuthenticationState extends State<UserAuthentication> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // SegmentedButton<String>(segments: const [
-              //   ButtonSegment<String>(value: "signIn",enabled: true,label: AutoSizeText("Sign In")),
-              //   ButtonSegment<String>(value: "signUp",enabled: true,label: AutoSizeText("Sign Up")),
-              // ], selected: const {"signIn"},
-              //   style: SegmentedButton.styleFrom(
-              //     fixedSize: Size.fromWidth(MediaQuery.sizeOf(context).width * 0.7)
-              //   ),
-              //   // expandedInsets: EdgeInsets.zero,
-              // ),
               DecoratedBox(
                 decoration: BoxDecoration(
                     color: Colors.grey.shade200,
@@ -107,13 +101,14 @@ class _UserAuthenticationState extends State<UserAuthentication> {
                         initialLabelIndex: selected.value ? 0 : 1,
                         totalSwitches: 2,
                         minWidth: MediaQuery.sizeOf(context).width * 0.35,
-                        labels: const ['Sign In', 'Sign Up'],
+                        labels: [S.current.signIn, S.current.signUp],
                         onToggle: (index) {
                           // print(Hive.box("UserData").get("isLoggedIn"));
                           _name.clear();
                           _email.clear();
                           _password.clear();
                           _confirmPass.clear();
+                          _phone.clear();
                           agree.value = false;
                           selected.value = !selected.value;
                         },
@@ -121,7 +116,7 @@ class _UserAuthenticationState extends State<UserAuthentication> {
                           Colors.orange,
                         ],
                         borderColor: const [Colors.black],
-                        borderWidth: 0.5,
+                        borderWidth: 0.2,
                         inactiveBgColor: Theme.of(context).colorScheme.surface,
                         activeFgColor: Colors.black,
                         // inactiveBgColor: Colors.grey.shade200,
@@ -129,7 +124,7 @@ class _UserAuthenticationState extends State<UserAuthentication> {
                         cornerRadius: 10,
                         radiusStyle: true,
                         animate: true,
-                        animationDuration: 400,
+                        animationDuration: 300,
                       );
                     },
                   ),
@@ -142,7 +137,10 @@ class _UserAuthenticationState extends State<UserAuthentication> {
             valueListenable: selected,
             builder: (context, value, child) {
               return AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 500),
+                  duration: const Duration(milliseconds: 300),
+                  switchInCurve: Curves.easeInOut,
+                  switchOutCurve: Curves.easeInOut,
+                  reverseDuration: const Duration(seconds: 300),
                   transitionBuilder: (child, animation) {
                     return SizeTransition(
                       sizeFactor: animation,
@@ -150,18 +148,21 @@ class _UserAuthenticationState extends State<UserAuthentication> {
                       child: child,
                     );
                   },
-                  child: Visibility(
-                    key: ValueKey<Widget>(signUp(
-                          (value) {},
-                    )),
-                    visible: selected.value,
-                    replacement: signUp(
-                          (value) {
-                        agree.value = value!;
-                        // print(value);
-                      },
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Visibility(
+                      key: ValueKey<Widget>(signUp(
+                            (value) {},
+                      )),
+                      visible: selected.value,
+                      replacement: signUp(
+                            (value) {
+                          agree.value = value!;
+                          // print(value);
+                        },
+                      ),
+                      child: signIn(),
                     ),
-                    child: signIn(),
                   ));
             },
           )
@@ -181,7 +182,7 @@ class _UserAuthenticationState extends State<UserAuthentication> {
           //   color: Colors.transparent,
           // ),
           AppTextField(
-            hintText: "Email",
+            hintText: S.current.email,
             controller: _email,
             keyBoardType: TextInputType.emailAddress,
             validator: (value) {
@@ -200,7 +201,7 @@ class _UserAuthenticationState extends State<UserAuthentication> {
             valueListenable: isPass,
             builder: (context, value, child) {
               return AppTextField(
-                hintText: "Password",
+                hintText: S.current.password,
                 controller: _password,
                 keyBoardType: TextInputType.visiblePassword,
                 suffix: IconButton(
@@ -221,34 +222,63 @@ class _UserAuthenticationState extends State<UserAuthentication> {
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               TextButton(
-                  onPressed: () {}, child: const Text("Forgot password ?")),
+                  onPressed: () {
+                    context.push("/authentication/forgotPassword");
+                  }, child: Text(S.current.forgotPassword)),
             ],
           ),
           BlocConsumer<AuthCubit, AuthStates>(
             listener: (context, state) {
               // print(state);
+              if(state is AuthInProgressState){
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (context) {
+                  return const AlertDialog(
+                    backgroundColor: Colors.transparent,
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CircularProgressIndicator.adaptive()
+                      ],
+                    ),
+                  );
+                },);
+              }
               if (state is AuthErrorState) {
+                Navigator.pop(context);
                 showDialog(
                   context: context,
                   builder: (context) {
                     return AlertDialog(
+                        contentPadding: const EdgeInsets.all(16),
+                        actionsPadding: const EdgeInsets.all(16),
+                        titlePadding: const EdgeInsets.only(top: 16,left: 16,right: 16),
                         actions: [
-                          TextButton(onPressed: () => context.pop(), child: const Text("Ok"))
+                          Row(
+                            children: [
+                              Expanded(child: FilledButton(onPressed: () => context.pop(), child: const Text("Try again"))),
+                            ],
+                          )
                         ],
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10)),
-                        title: const Text("Error"),
-                        content: Text(state.error));
+                        title: Row(
+                          mainAxisSize: MainAxisSize.max,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.warning_amber_rounded,color: Colors.redAccent,size: 64.r,)
+                          ],
+                        ),
+                        content: Text(state.error,textAlign: TextAlign.center,style: TextStyle(
+                          fontSize: 16.sp
+                        ),));
                   },
                 );
               }
             },
             builder: (context, state) {
-              if (state is AuthInProgressState) {
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
-              }
               return FilledButton(
                   onPressed: () async {
                     List<ConnectivityResult> result =
@@ -259,7 +289,7 @@ class _UserAuthenticationState extends State<UserAuthentication> {
                         if(!context.mounted) return;
                         context
                             .read<AuthCubit>()
-                            .signInUser(_email.text, _password.text);
+                            .signInUser(_email.text.trim(), _password.text.trim());
                       }
                     } else {
                       if(!context.mounted) return;
@@ -270,13 +300,14 @@ class _UserAuthenticationState extends State<UserAuthentication> {
                           ),)));
                     }
                   },
-                  child: const Text("Sign In"));
+                  child: Text(S.current.signIn));
             },
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text("Don't have an account? "),
+              Text(S.current.dontHaveAnAccount),
+              const SizedBox(width: 8,),
               TextButton(
                 onPressed: () {
                   setState(() {
@@ -286,7 +317,7 @@ class _UserAuthenticationState extends State<UserAuthentication> {
                   });
                 },
                 style: TextButton.styleFrom(padding: EdgeInsets.zero),
-                child: const Text("Create an account"),
+                child: Text(S.current.createAnAccount),
               ),
             ],
           )
@@ -304,7 +335,7 @@ class _UserAuthenticationState extends State<UserAuthentication> {
         shrinkWrap: true,
         children: [
           AppTextField(
-            hintText: "Name",
+            hintText: S.current.name,
             controller: _name,
             keyBoardType: TextInputType.name,
             validator: (value) {
@@ -318,7 +349,7 @@ class _UserAuthenticationState extends State<UserAuthentication> {
             color: Colors.transparent,
           ),
           AppTextField(
-            hintText: "Phone Number",
+            hintText: S.current.phoneNumber,
             controller: _phone,
             keyBoardType: TextInputType.number,
             validator: (value) {
@@ -340,7 +371,7 @@ class _UserAuthenticationState extends State<UserAuthentication> {
                       fillColor: Theme.of(context)
                           .colorScheme
                           .inverseSurface
-                          .withOpacity(0.07),
+                          .withOpacity( 0.07),
                       border: OutlineInputBorder(
                           borderSide:
                           const BorderSide(color: Colors.transparent),
@@ -371,22 +402,25 @@ class _UserAuthenticationState extends State<UserAuthentication> {
             },
           ),
           const SizedBox(height: 4,),
-          AutoSizeText("Please select your current level of education",style: Theme.of(context).textTheme.labelMedium!.copyWith(
+          AutoSizeText(S.current.educationNote,style: Theme.of(context).textTheme.labelMedium!.copyWith(
             color: Colors.grey
           ),),
           const Divider(
             color: Colors.transparent,
           ),
           AppTextField(
-            hintText: "Email",
+            hintText: S.current.email,
             controller: _email,
             keyBoardType: TextInputType.emailAddress,
             validator: (value) {
               if (value == null || value.isEmpty) {
                 return "Email cannot be empty.";
-              } else if (!UserValidation().emailExp.hasMatch(value)) {
+              } else if(!EmailValidator.validate(value)){
                 return "Enter valid email ex.example@abc.com";
               }
+              //   if (!UserValidation().emailExp.hasMatch(value)) {
+              //   return "Enter valid email ex.example@abc.com";
+              // }
               return null;
             },
           ),
@@ -397,7 +431,7 @@ class _UserAuthenticationState extends State<UserAuthentication> {
             valueListenable: isPass,
             builder: (context, value, child) {
               return AppTextField(
-                hintText: "Password",
+                hintText: S.current.password,
                 controller: _password,
                 keyBoardType: TextInputType.visiblePassword,
                 validator: (value) {
@@ -434,7 +468,7 @@ class _UserAuthenticationState extends State<UserAuthentication> {
             valueListenable: isPass,
             builder: (context, value, child) {
               return AppTextField(
-                hintText: "Confirm Password",
+                hintText: S.current.confirmPassword,
                 controller: _confirmPass,
                 keyBoardType: TextInputType.visiblePassword,
                 isPass: isPass.value,
@@ -452,74 +486,69 @@ class _UserAuthenticationState extends State<UserAuthentication> {
           const Divider(
             color: Colors.transparent,
           ),
-          ValueListenableBuilder(
-            valueListenable: agree,
-            builder: (context, value, child) {
-              return CheckboxListTile(
-                contentPadding: EdgeInsets.zero,
-                title: RichText(
-                  text: TextSpan(
-                      text: "By continuing, you agree to out ",
-                      children: [
-                        TextSpan(
-                            text: "Terms & Conditions",
-                            style: TextStyle(
-                                color: Theme.of(context).colorScheme.secondary),
-                            recognizer: TapGestureRecognizer()
-                              ..onTap = () {
-                              launchUrl(Uri(path: "https://kgamify.in/teacheradminpanel/apis/terms_and_conditions_user.php"));
-                              }
-                              ),
-                        const TextSpan(text: " & "),
-                        TextSpan(
-                            text: "Privacy Policy",
-                            style: TextStyle(
-                                color: Theme.of(context).colorScheme.secondary),
-                            recognizer: TapGestureRecognizer()
-                              ..onTap = () {
-                                launchUrlString("https://kgamify.in/teacheradminpanel/apis/terms_and_conditions_user.php");
-                              }
-                              )
-                      ],
-                      style: TextStyle(
-                          color:
-                          Theme.of(context).textTheme.titleLarge!.color)),
-                ),
-                value: agree.value,
-                onChanged: onChanged,
-                controlAffinity: ListTileControlAffinity.leading,
-              );
-            },
-          ),
+          ValueListenableBuilder(valueListenable: agree, builder: (context, value, child) {
+            return Row(
+              children: [
+                Checkbox(value: agree.value, onChanged: onChanged),
+                Expanded(
+                  child: AutoSizeText.rich(
+                    TextSpan(
+                        text: "By continuing, you agree to our ",
+                        children: [
+                          TextSpan(
+                              text: "Terms & Conditions & Privacy Policy",
+                              style: TextStyle(
+                                  color: Theme.of(context).colorScheme.secondary),
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = () {
+                                  launchUrl(
+                                      Uri.parse("https://kgamify.in/teacheradminpanel/apis/terms_and_conditions_user.php"),
+                                  );
+                                }
+                          ),
+                        ],
+                        style: TextStyle(
+                            color:
+                            Theme.of(context).textTheme.titleLarge!.color)),
+                  ),
+                )
+              ],
+            );
+          },),
           const Divider(
             color: Colors.transparent,
           ),
           BlocConsumer<AuthCubit, AuthStates>(
             listener: (context, state) {
-              if (state is AuthErrorState) {
+              if(state is AuthInProgressState){
                 showDialog(
                   context: context,
+                  barrierDismissible: false,
                   builder: (context) {
-                    return AlertDialog(
-                      actions: [
-                        TextButton(onPressed: () => context.pop(), child: const Text("Ok"))
-                      ],
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10)),
-                      title: const Text("Error"),
-                      content: Text(state.error.toString()),
+                    return const AlertDialog(
+                      backgroundColor: Colors.transparent,
+                      content: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          CircularProgressIndicator.adaptive()
+                        ],
+                      ),
                     );
-                  },
-                );
+                  },);
               }
-              // TODO: implement listener
+              if (state is AuthErrorState) {
+                Navigator.pop(context);
+                if(state.error == "Oops! It seems like you already have an account with us. Try logging in!"){
+                  trySignInDialog(context, state.error, () {
+                    selected.value = !selected.value;
+                  },);
+                  context.pop();
+                } else {
+                  tryAgainDialog(context, state.error, () => context.pop(),);
+                }
+              }
             },
             builder: (context, state) {
-              if (state is AuthInProgressState) {
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
-              }
               return FilledButton(
                 onPressed: () async {
                   List<ConnectivityResult> result =
@@ -530,7 +559,7 @@ class _UserAuthenticationState extends State<UserAuthentication> {
                     if (signUpFormKey.currentState!.validate()) {
                       if (agree.value) {
                         context.read<AuthCubit>().authenticate(
-                            _name.text.replaceAll(" ", "_").trim(),
+                            _name.text.trim(),
                             _email.text.trim(),
                             _password.text.trim(),
                             _phone.text.trim(),
@@ -548,14 +577,14 @@ class _UserAuthenticationState extends State<UserAuthentication> {
                         ))));
                   }
                 },
-                child: const Text("Create account"),
+                child: Text(S.current.createAnAccount),
               );
             },
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text("Already have an account?"),
+              Text(S.current.alreadyHaveAnAccount),
               TextButton(
                 onPressed: () {
                   _name.clear();
@@ -565,7 +594,7 @@ class _UserAuthenticationState extends State<UserAuthentication> {
                   selected.value = true;
                 },
                 style: TextButton.styleFrom(padding: EdgeInsets.zero),
-                child: const Text("Sign Up"),
+                child: Text(S.current.signUp),
               ),
             ],
           )
@@ -574,3 +603,62 @@ class _UserAuthenticationState extends State<UserAuthentication> {
     );
   }
 }
+
+trySignInDialog(BuildContext context,String error,void Function() onTap){
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+          contentPadding: const EdgeInsets.all(16),
+          actionsPadding: const EdgeInsets.all(16),
+          titlePadding: const EdgeInsets.only(top: 16,left: 16,right: 16),
+          actions: [
+            Row(
+              children: [
+                Expanded(child: FilledButton(onPressed:onTap, child: const Text("Sign in"))),
+              ],
+            )
+          ],
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10)),
+          title: Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.info_outline_rounded,color: Colors.orangeAccent,size: 64.r,)
+            ],
+          ),
+          content: Text(error,textAlign: TextAlign.center,));
+    },
+  );
+}
+
+tryAgainDialog(BuildContext context,String error,void Function() onTap){
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+          contentPadding: const EdgeInsets.all(16),
+          actionsPadding: const EdgeInsets.all(16),
+          titlePadding: const EdgeInsets.only(top: 16,left: 16,right: 16),
+          actions: [
+            Row(
+              children: [
+                Expanded(child: FilledButton(onPressed:onTap, child: const Text("Try again"))),
+              ],
+            )
+          ],
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10)),
+          title: Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.warning_amber_rounded,color: Colors.orangeAccent,size: 64.r,)
+            ],
+          ),
+          content: Text(error,textAlign: TextAlign.center,));
+    },
+  );
+}
+

@@ -1,5 +1,6 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
+// import 'package:gamify_test/utils/widgets/question_video.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -13,32 +14,32 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            Center(
-              child: CupertinoSegmentedControl(
-                children: <int, Widget>{
-                  0: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(50)
-                    ),
-                    child: const Text("Item 1"),
-                  ),
-                  1: const Text("Item 2")
-                },
-                onValueChanged: (value) {
-                  setState(() {
-                    groupValue = value;
-                  });
-                },
-                groupValue: groupValue,
-              ),
-            ),
-            const SignInButton()
-          ],
-        ),
+      appBar: AppBar(),
+      body: const SafeArea(
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: HtmlWidget('''
+          <iframe width="560" height="315" src="https://www.youtube.com/embed/MqjCIITfCIA?si=y0irvhowv-uJBbCk&amp;controls=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+          ''')
+//           HtmlWidget('''<p>Identify the code segments A and B:</p><pre><code class="language-plaintext">item = queue[front]
+// A)
+// if(front == rear) {
+// 	front = rear = -1;
+// }
+// else{
+// 	front = (front +1)%size;
+// }
+// B)
+// if(front == -1) {
+// 	front = rear = 0;
+// } else {
+// 	rear = (rear +1)%size;
+// 	queue[rear] = item;
+// }</code></pre>''',
+//             buildAsync: true,
+//             renderMode: RenderMode.listView,
+//           ),
+        )
       ),
     );
   }

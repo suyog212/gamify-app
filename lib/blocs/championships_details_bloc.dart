@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:gamify_test/models/championship_details_model.dart';
-import 'package:gamify_test/repositories/championship_repository.dart';
+import 'package:kGamify/models/championship_details_model.dart';
+import 'package:kGamify/repositories/championship_repository.dart';
 
 
 abstract class ChampionshipsStates {}
@@ -28,7 +28,11 @@ class ChampionshipsBloc extends Cubit<ChampionshipsStates> {
   void getCategories() async {
     try {
       models = await _categoriesRepository.fetchCategory();
-      sortChampionships("Date");
+      if(models.isEmpty){
+        emit(CategoriesErrorState("No championships found"));
+      }else {
+        sortChampionships("Date");
+      }
     } catch (e) {
       emit(CategoriesErrorState(e.toString()));
     }
@@ -59,7 +63,7 @@ class ChampionshipsBloc extends Cubit<ChampionshipsStates> {
         .where(
           (element) =>
       element.champName!.toLowerCase().contains(query) ||
-          element.categoryName!.toLowerCase().contains(query),
+          element.categoryName!.toLowerCase().contains(query) || element.championshipDetails!.any((details) => details.uniqueId?.contains(query) ?? false,),
     )
         .toList()));
   }

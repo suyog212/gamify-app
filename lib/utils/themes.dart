@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme{
 
@@ -15,6 +16,13 @@ class AppTheme{
         secondary: Colors.orangeAccent,
         inversePrimary: Colors.grey,
       ),
+    appBarTheme: const AppBarTheme(
+      surfaceTintColor: Colors.transparent
+    ),
+    snackBarTheme: const SnackBarThemeData(
+      behavior: SnackBarBehavior.floating,
+    ),
+    textTheme: GoogleFonts.poppinsTextTheme(),
     scaffoldBackgroundColor: Colors.white,
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
@@ -40,6 +48,10 @@ class AppTheme{
       surfaceTintColor: Colors.black,
       elevation: 4
     ),
+      textTheme: GoogleFonts.poppinsTextTheme().apply(
+        bodyColor: Colors.white,
+        displayColor: Colors.white
+      ),
     scaffoldBackgroundColor: Colors.black,
     colorScheme: ColorScheme.fromSwatch(
         accentColor: Colors.orangeAccent,
@@ -51,12 +63,15 @@ class AppTheme{
       secondary: Colors.orange
     ),
     snackBarTheme: const SnackBarThemeData(
-      backgroundColor: Colors.black,
-      contentTextStyle: TextStyle(color: Colors.white),
       behavior: SnackBarBehavior.floating,
+      dismissDirection: DismissDirection.horizontal
     ),
     appBarTheme: const AppBarTheme(
-      backgroundColor: Colors.black
+      backgroundColor: Colors.black,
+      surfaceTintColor: Colors.transparent,
+      shadowColor: Colors.transparent,
+      elevation: 0,
+      scrolledUnderElevation: 0
     ),
       outlinedButtonTheme: OutlinedButtonThemeData(
           style: OutlinedButton.styleFrom(
@@ -71,7 +86,7 @@ class AppTheme{
       ),
       inputDecorationTheme: InputDecorationTheme(
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-      )
+      ),
   );
 
 

@@ -1,10 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:gamify_test/models/question_analytics.dart';
-import 'package:gamify_test/repositories/championship_analytics_repository.dart';
-import 'package:gamify_test/utils/constants.dart';
-import 'package:gamify_test/utils/router.dart';
-import 'package:go_router/go_router.dart';
+import 'package:kGamify/models/question_analytics.dart';
+import 'package:kGamify/repositories/championship_analytics_repository.dart';
+import 'package:kGamify/utils/constants.dart';
+
 
 abstract class QuestionAnalyticsState{}
 
@@ -26,8 +25,8 @@ class QuestionAnalyticsCubit extends Cubit<QuestionAnalyticsState> {
 
   void getQuestionAnalytics(int champId) async {
     try{
-      List<QuestionAnalytics> qAnalytics = await analyticsRepository.getQuestionAnalytics(champId);
-      emit(QuestionAnalyticsLoaded(qAnalytics));
+      List<dynamic> qAnalytics = await analyticsRepository.getQuestionAnalytics(champId);
+      emit(QuestionAnalyticsLoaded(qAnalytics.map((e) => QuestionAnalytics.fromJson(e),).toList()));
     } on DioException catch (e){
       emit(QuestionAnalyticsError(errorStrings(e.type)));
     }

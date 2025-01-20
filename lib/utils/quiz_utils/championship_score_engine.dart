@@ -2,18 +2,19 @@ class ChampionshipScoreEngine {
   double calculateScoreForCorrectAnswer(int expectedTime, int actualTime,
       double coinPerQuestion, bool isAnsCorrect, int negativeMarks) {
     double result = 0;
-    expectedTime *= 60;
+    // expectedTime *= 60;
     if (isAnsCorrect) {
       if (actualTime < expectedTime) {
-        result = coinPerQuestion + (actualTime / expectedTime);
+        result = coinPerQuestion + ((1 - (actualTime / expectedTime)) * coinPerQuestion);
       } else {
-        result = coinPerQuestion - (actualTime / expectedTime);
+        result = coinPerQuestion - (((actualTime / expectedTime) - 1) * coinPerQuestion);
       }
     } else {
       if (actualTime < expectedTime) {
-        result = coinPerQuestion + (actualTime / expectedTime) + negativeMarks;
+        result = (coinPerQuestion + ((1 - (actualTime / expectedTime)) * coinPerQuestion) + negativeMarks) * -1;
       } else {
-        result = coinPerQuestion - (actualTime / expectedTime) + negativeMarks;
+        // result = ((((actualTime / expectedTime) - 1) * coinPerQuestion) + coinPerQuestion) * -1;
+        result = (coinPerQuestion * - 1);
       }
     }
     return result;

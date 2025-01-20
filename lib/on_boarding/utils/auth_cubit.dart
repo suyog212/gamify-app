@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:gamify_test/on_boarding/utils/auth_handler.dart';
-import 'package:gamify_test/utils/constants.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:kGamify/on_boarding/utils/auth_handler.dart';
+import 'package:kGamify/utils/constants.dart';
 
 abstract class AuthStates{}
 
@@ -23,10 +23,10 @@ class AuthCubit extends Cubit<AuthStates>{
 
   AuthHandler authHandler = AuthHandler();
 
-  void authenticate(String name,String email,String password,String phone,String qualification) async {
+  void authenticate(name, email, password, phone, qualification) async {
     try{
-      Response status = await authHandler.registerUser(name, email, password, phone, qualification);
       emit(AuthInProgressState());
+      Response status = await authHandler.registerUser(name, email, password, phone, qualification);
       if(status.statusCode == 201){
         await Hive.box(userDataDB).put("personalInfo", {
           "user_id": status.data['user_id'],
@@ -42,30 +42,33 @@ class AuthCubit extends Cubit<AuthStates>{
         await Hive.box(userDataDB).put("isLoggedIn", true);
         emit(AuthSuccessState());
       }
-    }on Exception catch (e) {
+    } catch (e) {
       emit(AuthErrorState(e.toString()));
       emit(AuthInitialState());
     }
   }
 
-  void signInUser(String email,String password) async {
+  void signInUser( email, password) async {
     try{
+      emit(AuthInProgressState());
       Map<String, dynamic> userData = await authHandler.checkUser(email, password);
       Map<String,dynamic> data = userData['data'];
       if(userData.isNotEmpty){
         // print(data.values.elementAt(0));
         await Hive.box(userDataDB)
             .put("personalInfo", {
-          "user_id": data.values.elementAt(0),
-          "name": data.values.elementAt(2),
-          "email": data.values.elementAt(1),
-          "password": data.values.elementAt(3),
-          "user_qualification": data.values.elementAt(4),
-          "user_key": data.values.elementAt(5),
-          "phone_no": data.values.elementAt(6),
-          "first_login": data.values.elementAt(7),
-          "recent_login": data.values.elementAt(8),
-          "city" : data['location']
+          "user_id": data['user_id'],
+          "name": data['user_name'],
+          "email": data['email'],
+          "age" : data['age'],
+          // "user_qualification": data.values.elementAt(4),
+          "user_key": data['user_key'],
+          "phone_no": data['phone_no'],
+          "first_login": data['first_login'],
+          "recent_login": data['recent_login'],
+          "city" : data['location'].split(",")[0],
+          "state" : data['location'].split(",")[1],
+          "country" : data['location'].split(",")[2]
         });
 
         String interests = data['interests'];
@@ -84,7 +87,7 @@ class AuthCubit extends Cubit<AuthStates>{
       } else {
         debugPrint("Something went wrong");
       }
-    } on Exception catch (e) {
+    } catch (e) {
       emit(AuthErrorState(e.toString()));
       emit(AuthInitialState());
     }

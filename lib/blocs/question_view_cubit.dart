@@ -1,8 +1,9 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:gamify_test/repositories/question_repository.dart';
-import 'package:gamify_test/utils/constants.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:kGamify/repositories/question_repository.dart';
+import 'package:kGamify/utils/constants.dart';
 
 abstract class QuestionViewStates{}
 
@@ -25,19 +26,22 @@ class QuestionViewCubit  extends Cubit<QuestionViewStates>{
     emit(QuestionViewLoadingState());
     try{
       int statusCode = await questionsRepository.sendQuestionData(questionId, timeTaken, expectedTime, pointsEarned, correctAns,champId,submittedAns);
-      if(statusCode == 201){
+      if(statusCode == 201 || statusCode == 200){
         emit(QuestionViewAnsweredState());
         emit(QuestionViewInitialState());
       }
     } catch (e) {
-      snackBarKey.currentState?.showSnackBar(SnackBar(content: AutoSizeText("Error: $e"),duration: const Duration(seconds: 2),showCloseIcon: true,));
+      // ignore: prefer_const_constructors
+      snackBarKey.currentState?.showSnackBar(SnackBar(content: AutoSizeText("Something went wrong."),duration: const Duration(seconds: 2),showCloseIcon: true,));
       emit(QuestionViewInitialState());
       // Get.showSnackbar( GetSnackBar(title: "Error",message: e.toString(),));
     }
   }
 
-  void submitChampionshipResult(String gameMode, double totalNegative, int champId,double totalBonus, double totalPenalty, double totalScore, String timeTaken, String expectedTime, dynamic userId,int totalQuestion, int correctQuestion) async {
+  void submitChampionshipResult(gameMode, totalNegative, champId, totalBonus,  totalPenalty, totalScore, timeTaken, expectedTime, userId, totalQuestion, correctQuestion) async {
     try {
+      // print("Clicked");
+      emit(QuestionViewLoadingState());
       await questionsRepository.submitChampData(gameMode, totalNegative, champId, totalBonus, totalPenalty, totalScore, timeTaken, expectedTime, userId, totalQuestion, correctQuestion);
       emit(ResultSubmittedState());
       emit(QuestionViewInitialState());
@@ -47,19 +51,75 @@ class QuestionViewCubit  extends Cubit<QuestionViewStates>{
     }
   }
 
-  void reportWrongQuestion(BuildContext context,PageController pageController) {
-    showDialog(context: context, builder: (context) {
-      return AlertDialog(
-        title: const Text("Are you sure this question is wrong?"),
-        actions: [
-          TextButton(onPressed: () {
-            pageController.nextPage(duration: const Duration(milliseconds: 100), curve: Curves.easeInOut);
-          }, child: const Text("Yes")),
-          TextButton(onPressed: () {
-            Navigator.pop(context);
-          } , child: const Text("No"))
-        ],
-      );
-    },);
+  void reportWrongQuestion(BuildContext context,PageController pageController,int questionId,int champId,int teacherId,int questionsMarkedWrong) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          content: Text(
+            "Is this question wrong?",
+            style: TextStyle(
+                color: Theme.of(context).colorScheme.inverseSurface,
+                fontSize: 20.sp
+            ),
+            textAlign: TextAlign.center,
+          ),
+          shape:
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          title: Icon(
+            Icons.warning_amber_rounded,
+            color: Theme.of(context).colorScheme.error,
+            size: Theme.of(context).textTheme.displayMedium!.fontSize! * 2,
+          ),
+          actions: [
+            Row(
+              children: [
+                Expanded(
+                  child: FilledButton(
+                      style: FilledButton.styleFrom(
+                          backgroundColor: Theme.of(context).colorScheme.error),
+                      onPressed: () async {
+
+                        try{
+                          emit(QuestionViewLoadingState());
+                          await questionsRepository.reportWrongQuestion(questionId, champId, teacherId);
+                          emit(QuestionViewAnsweredState());
+                          questionsMarkedWrong += 1;
+                          if(!context.mounted) return;
+                          Navigator.pop(context);
+                          emit(QuestionViewInitialState());
+                        } catch (e) {
+                          snackBarKey.currentState?.showSnackBar(const SnackBar(content: Text("Something went wrong")));
+                          emit(QuestionViewInitialState());
+                        }
+                      },
+                      child: const Text(
+                        "Yes",
+                        style: TextStyle(color: Colors.white),
+                      )),
+                ),
+                const VerticalDivider(
+                  color: Colors.transparent,
+                ),
+                Expanded(
+                  child: OutlinedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        emit(QuestionViewInitialState());
+                      },
+                      child: Text(
+                        "No",
+                        style: TextStyle(
+                            color:
+                            Theme.of(context).colorScheme.inverseSurface),
+                      )),
+                )
+              ],
+            )
+          ],
+        );
+      },
+    );
+
   }
 }

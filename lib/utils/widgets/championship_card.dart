@@ -1,18 +1,29 @@
+import 'dart:io';
+
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:gamify_test/blocs/question_bloc.dart';
-import 'package:gamify_test/models/championship_details_model.dart';
-import 'package:gamify_test/utils/constants.dart';
-import 'package:hive_flutter/adapters.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
+import 'package:go_router/go_router.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:kGamify/api/api.dart';
+import 'package:kGamify/blocs/question_bloc.dart';
+import 'package:kGamify/models/championship_details_model.dart';
+import 'package:kGamify/repositories/championship_repository.dart';
+import 'package:kGamify/screens/question_view.dart';
+import 'package:kGamify/utils/constants.dart';
+import 'package:kGamify/utils/widgets/widgets.dart';
+import 'package:validator_regex/validator_regex.dart';
 
 class ChampionshipInformationCard extends StatefulWidget {
   final String startDate;
   final String endDate;
+  final int heroIndex;
   final String startTime;
   final String endTime;
   final String champId;
@@ -28,7 +39,14 @@ class ChampionshipInformationCard extends StatefulWidget {
   final int noOfQuestions;
   final int noOfUsers;
   final int teacherId;
+  final String? giftImage;
   final TeacherDetailsModel teacherDetailsModel;
+  final String? gameModeRules;
+  final String? userQualification;
+  final String? giftDescription;
+  final String? noOfUserPlayed;
+  final String? questionCount;
+  final String uniqueId;
   const ChampionshipInformationCard(
       {super.key,
       required this.startDate,
@@ -48,7 +66,14 @@ class ChampionshipInformationCard extends StatefulWidget {
       required this.teacherDetailsModel,
       required this.champStatus,
       required this.categoryStatus,
-      required this.uploadImg});
+      required this.heroIndex,
+      required this.uploadImg,
+      this.giftImage,
+      this.gameModeRules,
+      this.userQualification,
+      this.giftDescription,
+      this.noOfUserPlayed,
+      this.questionCount, required this.uniqueId});
 
   @override
   State<ChampionshipInformationCard> createState() =>
@@ -60,14 +85,14 @@ class _ChampionshipInformationCardState
   @override
   Widget build(BuildContext context) {
     final formatter =
-        NumberFormat.compact(locale: "en_US", explicitSign: false);
+        NumberFormat.compact(locale: Platform.localeName, explicitSign: false);
     final formattedStartDate =
         DateTime.parse("${widget.startDate} ${widget.startTime}");
     final formattedEndDate =
         DateTime.parse("${widget.endDate} ${widget.endTime}");
-    final start = DateFormat("MMM E d h:mm a")
+    final start = DateFormat("MMMM d h:mm a")
         .format(DateTime.parse("${widget.startDate} ${widget.startTime}"));
-    final end = DateFormat("MMM E d h:mm a")
+    final end = DateFormat("MMMM d h:mm a")
         .format(DateTime.parse("${widget.endDate} ${widget.endTime}"));
     Map<String, String> gameModes = {
       "play_win_gift": "Play and Win",
@@ -83,92 +108,265 @@ class _ChampionshipInformationCardState
       child: InkWell(
         borderRadius: BorderRadius.circular(10),
         onTap: () {
-          //TODO : Remove print statements from this function
-          // if (int.parse(widget.champStatus) == 1 &&
-          //     int.parse(widget.categoryStatus) == 1) {
-          //   if (DateTime.parse(formattedStartDate.toString())
-          //       .isAfter(DateTime.now())) {
-          //     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          //         content: Text("The championship hasn't started yet")));
-          //   }
-          //   if (DateTime.parse(formattedEndDate.toString())
-          //       .isBefore(DateTime.now())) {
-          //     ScaffoldMessenger.of(context).showSnackBar(
-          //         SnackBar(content: Text("The championship ended on $end")));
-          //   } else {
+          // else {
           showDialog(
             context: context,
             builder: (context) {
-              return SizedBox(
-                height: MediaQuery.sizeOf(context).height * 0.5,
-                width: MediaQuery.sizeOf(context).width,
-                child: AlertDialog(
-                  title: Text(widget.categoryName),
-                  content: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      AutoSizeText.rich(
-                        TextSpan(
-                          text: "Rules\n",
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleLarge!
-                              .copyWith(fontWeight: FontWeight.w600),
-                          children: [
-                            TextSpan(text: '''
-1. All questions are compulsory
-2. Navigating through questions is not allowed.
-3. Can be played only once. Ensure you have stable internet connection
-                            ''', style: Theme.of(context).textTheme.titleSmall),
-                          ],
+              return StatefulBuilder(
+                builder: (BuildContext context,
+                    void Function(void Function()) setState) {
+                  return Dialog(
+                    insetPadding: const EdgeInsets.all(16),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                    // child: ,
+                    // title: Text(widget.categoryName),
+                    child: Material(
+                      borderRadius: BorderRadius.circular(10),
+                      type: MaterialType.card,
+                      child: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                              maxHeight:
+                                  MediaQuery.sizeOf(context).height * 0.6),
+                          // heightFactor: 0.6,
+                          child: Scrollbar(
+                            child: SingleChildScrollView(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        "Rules",
+                                        style: TextStyle(
+                                            fontSize: 20.sp,
+                                            fontWeight: FontWeight.w600),
+                                      ),
+                                      IconButton(onPressed: () => context.pop(), icon: const Icon(Icons.close))
+                                    ],
+                                  ),
+                                  HtmlWidget(widget.gameModeRules!),
+                                  const Divider(
+                                    color: Colors.transparent,
+                                  ),
+                                  if (widget.modeName == "play_win_gift")
+                                    // if (false)
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        AutoSizeText(
+                                          "Prizes you can win",
+                                          style: TextStyle(
+                                              fontSize: 14.sp,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        SizedBox(
+                                          height: 6.r,
+                                        ),
+                                        if ((widget.giftImage != null &&
+                                                widget.giftImage!.isNotEmpty) &&
+                                            Uri.tryParse(
+                                                    widget.giftImage ?? "") !=
+                                                null &&
+                                            Uri.tryParse(
+                                                    widget.giftImage ?? "")!
+                                                .isAbsolute)
+                                          Column(
+                                            children: [
+                                              ClipRRect(
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                                child: CachedNetworkImage(
+                                                  imageUrl: widget.giftImage!,
+                                                  progressIndicatorBuilder:
+                                                      (context, url, progress) {
+                                                    return CircularProgressIndicator(
+                                                      value: progress.progress,
+                                                    );
+                                                  },
+                                                ),
+                                              ),
+                                              SizedBox(
+                                                height: 6.r,
+                                              ),
+                                              HtmlWidget(
+                                                widget.giftDescription ?? "",
+                                                textStyle: TextStyle(
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .inverseSurface),
+                                              )
+                                            ],
+                                          )
+                                      ],
+                                    ),
+                                  const Divider(
+                                    color: Colors.transparent,
+                                  ),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: LayoutBuilder(
+                                          builder: (context, constraints) {
+                                            // if (DateTime.parse(formattedEndDate.toString()).isBefore(DateTime.now())) {
+                                            //   return Row(
+                                            //     mainAxisAlignment:MainAxisAlignment.end,
+                                            //     children: [
+                                            //       Expanded(
+                                            //         child: FilledButton(
+                                            //             onPressed: () async {
+                                            //               showDialog(
+                                            //                 barrierDismissible: false,
+                                            //                 context: context,
+                                            //                 builder: (BuildContext context) {
+                                            //                   return AlertDialog(
+                                            //                     backgroundColor: Colors.transparent,
+                                            //                     shape: RoundedRectangleBorder(
+                                            //                         borderRadius:
+                                            //                         BorderRadius.circular(10)),
+                                            //                     content: Column(
+                                            //                       mainAxisSize: MainAxisSize.min,
+                                            //                       crossAxisAlignment:
+                                            //                       CrossAxisAlignment.center,
+                                            //                       children: [
+                                            //                         const CircularProgressIndicator(),
+                                            //                         const Divider(
+                                            //                           color: Colors.transparent,
+                                            //                         ),
+                                            //                         Text(
+                                            //                           "Loading...",
+                                            //                           style: Theme.of(context)
+                                            //                               .textTheme
+                                            //                               .titleMedium,
+                                            //                         ),
+                                            //                       ],
+                                            //                     ),
+                                            //                   );
+                                            //                 },
+                                            //               );
+                                            //               try{
+                                            //                 List<dynamic> data =
+                                            //                 await ChampionshipAnalyticsRepository()
+                                            //                     .getQuestionAnalytics(
+                                            //                     int.parse(widget.champId));
+                                            //                 if (!context.mounted) return;
+                                            //                 Navigator.pop(context);
+                                            //                 context.push(
+                                            //                     "/landingPage/quizAnalytics",
+                                            //                     extra: {
+                                            //                       "data": data,
+                                            //                       "category_name": widget.categoryName,
+                                            //                       "champ_name": widget.champName,
+                                            //                       "start_time": formattedStartDate.toString(),
+                                            //                       'champ_id': int.parse(widget.champId),
+                                            //                       'gift_description':
+                                            //                       widget.giftDescription ?? "",
+                                            //                       'gift_type': "",
+                                            //                       'gift_image': widget.giftImage ?? "",
+                                            //                       'gift_name': "",
+                                            //                       'mode_name' : widget.modeName
+                                            //                     });
+                                            //               } catch (e){
+                                            //                 snackBarKey.currentState?.showSnackBar(const SnackBar(content: Text("Something went wrong.")));
+                                            //                 context.pop();
+                                            //               }
+                                            //             },
+                                            //             child: const AutoSizeText(
+                                            //                 "View analytics")),
+                                            //       ),
+                                            //     ],
+                                            //   );
+                                            // }
+                                            // if (DateTime.parse(formattedEndDate.toString()).isBefore(DateTime.now())) {
+                                            //   return const Row(
+                                            //     // mainAxisAlignment: MainAxisAlignment.end,
+                                            //     children: [
+                                            //       Expanded(
+                                            //           child: FilledButton(
+                                            //               onPressed: null,
+                                            //               child: AutoSizeText(
+                                            //                   "Yet to start",
+                                            //               ),
+                                            //           ),
+                                            //       ),
+                                            //     ],
+                                            //   );
+                                            // }
+                                            return FutureBuilder(
+                                              future: ChampionshipRepository().fetchChampDetails(int.parse(widget.champId)),
+                                              builder: (context, snapshot) {
+                                                if (snapshot.connectionState ==ConnectionState.waiting) {
+                                                  return const Center(
+                                                    child: CircularProgressIndicator.adaptive(),
+                                                  );
+                                                }
+                                                if (snapshot.hasData) {
+                                                  if (snapshot.data!.first.champStatus == "1" &&snapshot.data!.first.categoryStatus =="1") {
+                                                    return FutureBuilder(
+                                                      future: API().sendRequests.get(
+                                                          "/check_user_played.php?user_id=${Hive.box(userDataDB).get("personalInfo")['user_id']}&champ_id=${widget.champId}"),
+                                                      builder: (context, snapshot) {
+                                                        if (snapshot.connectionState == ConnectionState.waiting) {
+                                                          return const Center(
+                                                            child:CircularProgressIndicator(),
+                                                          );
+                                                        }
+                                                        if (snapshot.hasError && DateTime.parse(formattedStartDate.toString()).isBefore(DateTime.now()) && DateTime.parse(formattedEndDate.toString()).isAfter(DateTime.now())) {
+                                                          return FilledButton(
+                                                              onPressed: () async {
+                                                                var userId = Hive.box(userDataDB).get("personalInfo")['user_id'];
+                                                                context.read<QuestionsBloc>().getQuestions(
+                                                                    widget.modeId,
+                                                                    widget.categoryName,
+                                                                    widget.timeMinutes,
+                                                                    widget.noOfQuestions,
+                                                                    widget.modeName,
+                                                                    widget.champId,
+                                                                    widget.timeMinutes,
+                                                                    userId,
+                                                                    context,
+                                                                    widget.teacherDetailsModel.teacherName ?? ""
+                                                                );
+                                                              },
+                                                              child: const Text("Play"));
+                                                        }
+                                                        if(snapshot.hasData || DateTime.parse(formattedEndDate.toString()).isAfter(DateTime.now())) {
+                                                          return navigateToChampAnalytics(context, widget.champId, widget.modeId.toString());
+                                                        }
+                                                        return const FilledButton(onPressed: null, child: Text("Ended"));
+                                                      },
+                                                    );
+                                                  }
+                                                  return const Text("Not Available");
+                                                }
+                                                return const FilledButton(
+                                                    onPressed: null,
+                                                    child: Text("Not available"));
+                                              },
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                ],
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                      // ignore: prefer_const_constructors
-                      if (widget.modeName == "play_win_gift")
-                      // if (false)
-                        const Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            AutoSizeText("Prizes you can win"),
-                            FlutterLogo()
-                          ],
-                        )
-                    ],
-                  ),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
-                  actionsOverflowAlignment: OverflowBarAlignment.center,
-                  actions: [
-                    FilledButton(
-                        onPressed: () {
-                          var userId = Hive.box(userDataDB)
-                              .get("personalInfo")['user_id'];
-                          context.read<QuestionsBloc>().getQuestions(
-                              widget.modeId,
-                              widget.categoryName,
-                              widget.timeMinutes,
-                              widget.noOfQuestions,
-                              widget.modeName,
-                              widget.champId,
-                              widget.timeMinutes * 60,
-                              userId,
-                              context,
-                              widget.teacherDetailsModel.teacherName ?? "");
-                        },
-                        child: const Text("Play"))
-                  ],
-                ),
+                    ),
+                  );
+                },
               );
             },
           );
-          //   }
-          // } else {
-          //   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          //       content: Text(
-          //           "Championship is inactive try contacting the owner.")));
-          // }
         },
         child: Container(
           margin: const EdgeInsets.symmetric(vertical: 8),
@@ -181,11 +379,14 @@ class _ChampionshipInformationCardState
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
-                mainAxisAlignment: MainAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   AutoSizeText(
                     gameModes[widget.modeName] ?? "",
                     style: const TextStyle(color: Colors.red),
+                  ),
+                  AutoSizeText(
+                    "ID: ${widget.uniqueId}",
                   ),
                   // InkWell(
                   //   onTap: () {
@@ -317,17 +518,17 @@ class _ChampionshipInformationCardState
                   },
                 ),
               ),
+              // Text("Id: ${widget.uniqueId}"),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.baseline,
                 textBaseline: TextBaseline.ideographic,
                 children: [
                   Text(
-                    "${widget.noOfQuestions} Questions | ${widget.timeMinutes} mins",
+                    "${widget.noOfQuestions} Questions | ${formatChampionshipTime(quizSubmissionTime(widget.timeMinutes))}",
                     style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize:
-                            Theme.of(context).textTheme.titleMedium!.fontSize),
+                        fontSize: Theme.of(context).textTheme.titleMedium!.fontSize),
                   ),
                   // Icon(Icons.auto_graph),
                   // Spacer(),
@@ -336,7 +537,8 @@ class _ChampionshipInformationCardState
                     children: [
                       const Icon(Icons.person),
                       Text(
-                        formatter.format(5000),
+                        formatter
+                            .format(int.parse(widget.noOfUserPlayed ?? "0")),
                         style: Theme.of(context)
                             .textTheme
                             .titleMedium!
@@ -352,41 +554,50 @@ class _ChampionshipInformationCardState
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const OverflowBar(
-                        children: [
-                          Icon(Icons.school_outlined),
-                          VerticalDivider(),
-                          AutoSizeText("B.Tech")
-                        ],
-                      ),
-                      const Divider(
-                        height: 2,
-                      ),
-                      OverflowBar(
-                        children: [
-                          const Icon(Icons.calendar_month),
-                          const VerticalDivider(),
-                          OverflowBar(
-                            children: [
-                              const Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text("Starts : "),
-                                  Text("Ends   : ")
-                                ],
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [Text(start), Text(end)],
-                              )
-                            ],
-                          )
-                        ],
-                      ),
-                    ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        OverflowBar(
+                          children: [
+                            const Icon(Icons.school_outlined),
+                            const VerticalDivider(),
+                            AutoSizeText(
+                              widget.userQualification ?? "",
+                              overflow: TextOverflow.ellipsis,
+                            )
+                          ],
+                        ),
+                        const Divider(
+                          height: 2,
+                          color: Colors.transparent,
+                        ),
+                        OverflowBar(
+                          children: [
+                            const Icon(Icons.calendar_month),
+                            const VerticalDivider(),
+                            OverflowBar(
+                              children: [
+                                const Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    AutoSizeText("Starts : "),
+                                    AutoSizeText("Ends   : ")
+                                  ],
+                                ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    AutoSizeText(start),
+                                    AutoSizeText(end)
+                                  ],
+                                )
+                              ],
+                            )
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                   InkWell(
                     onTap: () {
@@ -397,7 +608,7 @@ class _ChampionshipInformationCardState
                             barrierColor: Theme.of(context)
                                 .colorScheme
                                 .inverseSurface
-                                .withOpacity(0.4),
+                                .withOpacity( 0.4),
                             barrierDismissible: true,
                             fullscreenDialog: true,
                             pageBuilder:
@@ -434,7 +645,7 @@ class _ChampionshipInformationCardState
                                           ),
                                           Hero(
                                             tag:
-                                                "teacherPfp${widget.teacherId}",
+                                                "${widget.teacherDetailsModel.teacherName}${widget.champId}${widget.modeName}",
                                             child: CircleAvatar(
                                               backgroundImage:
                                                   CachedNetworkImageProvider(
@@ -458,6 +669,8 @@ class _ChampionshipInformationCardState
                                                 mainAxisSize: MainAxisSize.min,
                                                 mainAxisAlignment:
                                                     MainAxisAlignment.center,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.center,
                                                 children: [
                                                   AutoSizeText(
                                                     widget.teacherDetailsModel
@@ -472,7 +685,7 @@ class _ChampionshipInformationCardState
                                                             .status ==
                                                         "1",
                                                     child: Icon(
-                                                      Icons.verified_outlined,
+                                                      Icons.verified,
                                                       color: Theme.of(context)
                                                           .colorScheme
                                                           .secondary,
@@ -514,14 +727,17 @@ class _ChampionshipInformationCardState
                                                                 style: Theme.of(
                                                                         context)
                                                                     .textTheme
-                                                                    .titleMedium,
+                                                                    .titleMedium
+                                                                    ?.copyWith(
+                                                                        fontWeight:
+                                                                            FontWeight.bold),
                                                               ),
                                                               AutoSizeText(
                                                                 "${widget.teacherDetailsModel.department}",
                                                                 style: Theme.of(
                                                                         context)
                                                                     .textTheme
-                                                                    .headlineSmall,
+                                                                    .titleMedium,
                                                               )
                                                             ],
                                                           )),
@@ -537,18 +753,25 @@ class _ChampionshipInformationCardState
                                                                 style: Theme.of(
                                                                         context)
                                                                     .textTheme
-                                                                    .titleMedium,
+                                                                    .titleMedium
+                                                                    ?.copyWith(
+                                                                        fontWeight:
+                                                                            FontWeight.bold),
                                                               ),
                                                               AutoSizeText(
                                                                 "${widget.teacherDetailsModel.institute}",
                                                                 style: Theme.of(
                                                                         context)
                                                                     .textTheme
-                                                                    .headlineSmall,
+                                                                    .titleMedium,
                                                               )
                                                             ],
                                                           ))
                                                         ],
+                                                      ),
+                                                      const Divider(
+                                                        color:
+                                                            Colors.transparent,
                                                       ),
                                                       Row(
                                                         children: [
@@ -563,17 +786,22 @@ class _ChampionshipInformationCardState
                                                                 style: Theme.of(
                                                                         context)
                                                                     .textTheme
-                                                                    .titleMedium,
+                                                                    .titleMedium
+                                                                    ?.copyWith(
+                                                                        fontWeight:
+                                                                            FontWeight.bold),
                                                               ),
                                                               AutoSizeText(
-                                                                "12",
+                                                                widget.teacherDetailsModel
+                                                                        .champsCreated ??
+                                                                    "0",
                                                                 style: Theme.of(
                                                                         context)
                                                                     .textTheme
-                                                                    .headlineSmall,
+                                                                    .titleMedium,
                                                               )
                                                             ],
-                                                          ))
+                                                          )),
                                                         ],
                                                       ),
                                                     ],
@@ -585,27 +813,6 @@ class _ChampionshipInformationCardState
                                           const Divider(
                                             color: Colors.transparent,
                                           ),
-                                          FilledButton(
-                                              style: FilledButton.styleFrom(
-                                                  fixedSize: Size.fromWidth(
-                                                      MediaQuery.sizeOf(context)
-                                                          .width)),
-                                              onPressed: () {
-                                                // Navigator.push(context, CupertinoPageRoute(builder: (context) => TeacherProfile(
-                                                //   teacherId: widget.teacherDetailsModel.teacherId,
-                                                //   createdAt: widget.teacherDetailsModel.createdAt,
-                                                //   department: widget.teacherDetailsModel.department,
-                                                //   email: widget.teacherDetailsModel.email,
-                                                //   institute: widget.teacherDetailsModel.institute,
-                                                //   phone: widget.teacherDetailsModel.phone,
-                                                //   status: widget.teacherDetailsModel.status,
-                                                //   teacherName: widget.teacherDetailsModel.teacherName,
-                                                //   username: widget.teacherDetailsModel.username,
-                                                //   uploadImg: widget.teacherDetailsModel.uploadImg,
-                                                //   verifyToken: null,
-                                                // )));
-                                              },
-                                              child: const Text("View profile"))
                                         ],
                                       ),
                                     ),
@@ -614,168 +821,13 @@ class _ChampionshipInformationCardState
                               );
                             },
                           ));
-                      // showDialog(
-                      //   context: context,
-                      //   builder: (context) {
-                      //     return Dialog(
-                      //       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                      //       insetPadding: EdgeInsets.all(MediaQuery.sizeOf(context).width * 0.07),
-                      //       child: Padding(
-                      //         padding: const EdgeInsets.all(12.0),
-                      //         child: Column(
-                      //           mainAxisSize: MainAxisSize.min,
-                      //           children: [
-                      //             Row(
-                      //               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      //               children: [
-                      //                 AutoSizeText(
-                      //                   "Teacher Details",
-                      //                   style: Theme.of(context).textTheme.titleLarge,
-                      //                 ),
-                      //                 IconButton(
-                      //                     onPressed: () => Navigator.pop(context),
-                      //                     icon: const Icon(Icons.close))
-                      //               ],
-                      //             ),
-                      //             CircleAvatar(
-                      //               backgroundImage: CachedNetworkImageProvider(
-                      //                 widget.uploadImg == ""
-                      //                     ? "https://i.pinimg.com/736x/c0/27/be/c027bec07c2dc08b9df60921dfd539bd.jpg"
-                      //                     : widget.uploadImg,
-                      //               ),
-                      //               radius: MediaQuery.sizeOf(context).width * 0.12,
-                      //             ),
-                      //             const Divider(
-                      //               color: Colors.transparent,
-                      //             ),
-                      //             Column(
-                      //               crossAxisAlignment: CrossAxisAlignment.center,
-                      //               children: [
-                      //                 Row(
-                      //                   mainAxisSize: MainAxisSize.min,
-                      //                   mainAxisAlignment: MainAxisAlignment.center,
-                      //                   children: [
-                      //                     AutoSizeText(
-                      //                       widget.teacherDetailsModel.teacherName!,
-                      //                       style: Theme.of(context).textTheme.titleLarge,
-                      //                     ),
-                      //                     Visibility(
-                      //                       visible: widget.teacherDetailsModel.status == "1",
-                      //                       child: Icon(
-                      //                         Icons.verified_outlined,
-                      //                         color: Theme.of(context).colorScheme.secondary,
-                      //                         size: Theme.of(context).textTheme.titleLarge!.fontSize,
-                      //                       ),
-                      //                     )
-                      //                   ],
-                      //                 ),
-                      //                 const Divider(
-                      //                   color: Colors.transparent,
-                      //                 ),
-                      //                 DecoratedBox(
-                      //                   decoration: BoxDecoration(
-                      //                       color: Colors.grey.withOpacity(0.1),
-                      //                       borderRadius: BorderRadius.circular(10)),
-                      //                   child: Padding(
-                      //                     padding: const EdgeInsets.all(8.0),
-                      //                     child: Column(
-                      //                       mainAxisSize: MainAxisSize.min,
-                      //                       children: [
-                      //                         Row(
-                      //                           children: [
-                      //                             Expanded(
-                      //                                 child: Column(
-                      //                               crossAxisAlignment: CrossAxisAlignment.start,
-                      //                               children: [
-                      //                                 AutoSizeText(
-                      //                                   "Department",
-                      //                                   style: Theme.of(context).textTheme.titleMedium,
-                      //                                 ),
-                      //                                 AutoSizeText(
-                      //                                   "${widget.teacherDetailsModel.department}",
-                      //                                   style: Theme.of(context).textTheme.headlineSmall,
-                      //                                 )
-                      //                               ],
-                      //                             )),
-                      //                             const VerticalDivider(),
-                      //                             Expanded(
-                      //                                 child: Column(
-                      //                               crossAxisAlignment: CrossAxisAlignment.start,
-                      //                               children: [
-                      //                                 AutoSizeText(
-                      //                                   "Institute",
-                      //                                   style: Theme.of(context).textTheme.titleMedium,
-                      //                                 ),
-                      //                                 AutoSizeText(
-                      //                                   "${widget.teacherDetailsModel.institute}",
-                      //                                   style: Theme.of(context).textTheme.headlineSmall,
-                      //                                 )
-                      //                               ],
-                      //                             ))
-                      //                           ],
-                      //                         ),
-                      //                         Row(
-                      //                           children: [
-                      //                             Expanded(
-                      //                                 child: Column(
-                      //                               crossAxisAlignment: CrossAxisAlignment.start,
-                      //                               children: [
-                      //                                 AutoSizeText(
-                      //                                   "Championships Created",
-                      //                                   style: Theme.of(context).textTheme.titleMedium,
-                      //                                 ),
-                      //                                 AutoSizeText(
-                      //                                   "12",
-                      //                                   style: Theme.of(context).textTheme.headlineSmall,
-                      //                                 )
-                      //                               ],
-                      //                             ))
-                      //                           ],
-                      //                         ),
-                      //                       ],
-                      //                     ),
-                      //                   ),
-                      //                 ),
-                      //               ],
-                      //             ),
-                      //             const Divider(
-                      //               color: Colors.transparent,
-                      //             ),
-                      //             FilledButton(
-                      //                 style: FilledButton.styleFrom(
-                      //                     fixedSize:
-                      //                         Size.fromWidth(MediaQuery.sizeOf(context).width)),
-                      //                 onPressed: () {
-                      //                   Navigator.push(context, CupertinoPageRoute(builder: (context) => TeacherProfile(
-                      //                     teacherId: widget.teacherDetailsModel.teacherId,
-                      //                     createdAt: widget.teacherDetailsModel.createdAt,
-                      //                     department: widget.teacherDetailsModel.department,
-                      //                     email: widget.teacherDetailsModel.email,
-                      //                     institute: widget.teacherDetailsModel.institute,
-                      //                     phone: widget.teacherDetailsModel.phone,
-                      //                     status: widget.teacherDetailsModel.status,
-                      //                     teacherName: widget.teacherDetailsModel.teacherName,
-                      //                     username: widget.teacherDetailsModel.username,
-                      //                     uploadImg: widget.teacherDetailsModel.uploadImg,
-                      //                     verifyToken: null,
-                      //                   )));
-                      //                 },
-                      //                 child: const Text("View profile"))
-                      //           ],
-                      //         ),
-                      //       ),
-                      //     );
-                      //   },
-                      // );
                     },
                     child: Hero(
-                      tag: "teacherPfp${widget.teacherId}",
+                      tag:
+                          "${widget.teacherDetailsModel.teacherName}${widget.champId}${widget.modeName}",
                       child: CircleAvatar(
-                        backgroundImage: CachedNetworkImageProvider(
-                          widget.uploadImg == ""
-                              ? "https://i.pinimg.com/736x/c0/27/be/c027bec07c2dc08b9df60921dfd539bd.jpg"
-                              : widget.uploadImg,
-                        ),
+                        backgroundImage: Validator.url(widget.uploadImg) ? CachedNetworkImageProvider(widget.uploadImg,
+                        ) : null,
                         // NetworkImage(
                         //     widget.uploadImg == "" ?
                         //     "https://i.pinimg.com/736x/c0/27/be/c027bec07c2dc08b9df60921dfd539bd.jpg" : widget.uploadImg),

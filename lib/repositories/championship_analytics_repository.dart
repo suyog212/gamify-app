@@ -1,9 +1,8 @@
 import 'package:dio/dio.dart';
-import 'package:gamify_test/api/api.dart';
-import 'package:gamify_test/models/championship_analytics_model.dart';
-import 'package:gamify_test/models/question_analytics.dart';
-import 'package:gamify_test/utils/constants.dart';
 import 'package:hive_flutter/adapters.dart';
+import 'package:kGamify/api/api.dart';
+import 'package:kGamify/models/championship_analytics_model.dart';
+import 'package:kGamify/utils/constants.dart';
 
 class ChampionshipAnalyticsRepository {
 
@@ -16,9 +15,9 @@ class ChampionshipAnalyticsRepository {
     return data.map((e) => ChampionshipAnalytics.fromJson(e)).toList();
   }
 
-  Future<List<QuestionAnalytics>> getQuestionAnalytics(int champId) async {
+  Future<List> getQuestionAnalytics(int champId) async {
     Response response = await _api.sendRequests.get("/get_analytics_per_question.php?user_id=$userId&champ_id=$champId");
     List<dynamic> data = response.data['data'];
-    return data.map((e) => QuestionAnalytics.fromJson(e),).toList();
+    return data;
   }
 }

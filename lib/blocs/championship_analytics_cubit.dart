@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:gamify_test/models/championship_analytics_model.dart';
-import 'package:gamify_test/repositories/championship_analytics_repository.dart';
-import 'package:gamify_test/utils/constants.dart';
+import 'package:kGamify/models/championship_analytics_model.dart';
+import 'package:kGamify/repositories/championship_analytics_repository.dart';
+import 'package:kGamify/utils/constants.dart';
 
 abstract class ChampionshipAnalyticsState {}
 
@@ -33,8 +33,25 @@ class ChampionshipAnalyticsCubit extends Cubit<ChampionshipAnalyticsState> {
      List<ChampionshipAnalytics> allAnalytics = await analyticsRepository.getChampionshipAnalyticsData();
      emit(ChampionshipAnalyticsLoaded(allAnalytics));
    } on DioException catch (e) {
-     emit(ChampionshipAnalyticsError(errorStrings(e.type)));
+     if(e.response != null && e.response!.statusCode == 469) {
+       emit(ChampionshipAnalyticsError("No data found"));
+     } else {
+       emit(ChampionshipAnalyticsError(errorStrings(e.type)));
+     }
    }
+  }
+
+  Future<List<ChampionshipAnalytics>> analyticsNavigator() async {
+    try{
+      List<ChampionshipAnalytics> allAnalytics = await analyticsRepository.getChampionshipAnalyticsData();
+      return allAnalytics;
+    } on DioException catch (e) {
+      if(e.response != null && e.response!.statusCode == 469) {
+        throw ("No data found");
+      } else {
+        throw (errorStrings(e.type));
+      }
+    }
   }
 
 

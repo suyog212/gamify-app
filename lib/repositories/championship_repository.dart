@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
-import 'package:gamify_test/api/api.dart';
-import 'package:gamify_test/models/championship_details_model.dart';
-import 'package:gamify_test/utils/constants.dart';
+import 'package:kGamify/api/api.dart';
+import 'package:kGamify/models/championship_details_model.dart';
+import 'package:kGamify/utils/constants.dart';
 
 class ChampionshipRepository {
 
@@ -73,11 +73,18 @@ class ChampionshipRepository {
           champStatus: details.elementAt(i)["champ_status"],
           categoryStatus: details.elementAt(i)["category_status"],
           uploadImg: details.elementAt(i)["upload_img"],
+          giftImage: details.elementAt(i)['gift_image'],
+          userQualification: details.elementAt(i)['user_qualification'],
+          gameModeRules: details.elementAt(i)['game_mode_rules'],
+          giftDescription: details.elementAt(i)['gift_description'],
+          noOfUsersPlayed: details.elementAt(i)['no_of_user_played'],
+          questionCount: details.elementAt(i)['question_count'],
+          uniqueId: details.elementAt(i)['unique_id']
         ));
       }
       return champDetails;
     } catch (e) {
-      rethrow;
+      return [ChampionshipDetails(champStatus: "0",categoryStatus: "0")];
     }
   }
 }

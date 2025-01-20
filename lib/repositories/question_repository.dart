@@ -1,8 +1,9 @@
 import 'package:dio/dio.dart';
-import 'package:gamify_test/api/api.dart';
-import 'package:gamify_test/models/questions_models.dart';
-import 'package:gamify_test/utils/constants.dart';
+import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:kGamify/api/api.dart';
+import 'package:kGamify/models/questions_models.dart';
+import 'package:kGamify/utils/constants.dart';
 
 class QuestionsRepository {
   final API _api = API();
@@ -19,7 +20,6 @@ class QuestionsRepository {
         await _api.sendRequests.get("/get_question.php?mode_id=$modeId");
         List<dynamic> questionData = response.data['data'];
         return questionData
-            .where((e) => e['question_text'].length < 1) // Filter out null values
             .map((e) => QuestionsDetailsModel.fromJson(e))
             .toList();
       } else {
@@ -47,23 +47,35 @@ class QuestionsRepository {
   }
 
   Future<int> submitChampData(
-      String gameMode,
-      double totalNegative,
-      int champId,
-      double totalBonus,
-      double totalPenalty,
-      double totalScore,
-      String timeTaken,
-      String expectedTime,
-      String userId,
-      int totalQuestion,
-      int correctQuestion) async {
+      gameMode,
+      totalNegative,
+      champId,
+      totalBonus,
+      totalPenalty,
+      totalScore,
+      timeTaken,
+      expectedTime,
+       userId,
+      totalQuestion,
+      correctQuestion) async {
     try {
       Response response = await _api.sendRequests.post(
           "/post_final_result.php?champ_id=$champId&user_id=$userId&time_taken=$timeTaken&expected_time=$expectedTime&game_mode=$gameMode&total_questions=$totalQuestion&correct_questions=$correctQuestion&total_score=$totalScore&total_bonus=$totalBonus&total_penalty=$totalPenalty&total_negative_points=$totalNegative");
       int status = response.data['status'];
       return status;
     } catch (e) {
+      rethrow;
+    }
+  }
+
+
+  reportWrongQuestion(int questionId, int champId, int teacherId) async {
+    try{
+      Response response = await _api.sendRequests.post("/post_wrong_questions.php?question_id=$questionId&champ_id=$champId&teacher_id=$teacherId");
+      int status = response.data['status'];
+      return status;
+    }
+    catch (e){
       rethrow;
     }
   }

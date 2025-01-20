@@ -1,7 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:gamify_test/blocs/theme_cubit.dart';
+import 'package:kGamify/blocs/theme_cubit.dart';
+import 'package:kGamify/generated/l10n.dart';
+import 'package:kGamify/on_boarding/utils/locale_selection_cubit.dart';
+
 
 class Settings extends StatefulWidget {
   const Settings({super.key});
@@ -11,7 +14,13 @@ class Settings extends StatefulWidget {
 }
 
 class _SettingsState extends State<Settings> {
-
+  Map<String,String> locales = {
+    "en" : "English",
+    "hi" : "हिन्दी",
+    "da" : "Dansk",
+    "de" : "Deutsch",
+    "sv" : "Svenska",
+  };
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -21,15 +30,39 @@ class _SettingsState extends State<Settings> {
       body: SafeArea(
         child: Column(
           children: [
-            const ListTile(
-              title: Text("Change language"),
-              trailing: Text("English"),
+            BlocBuilder<LocaleSelectionCubit, String>(
+              builder: (context, state) {
+                return ListTile(
+                  title: Text(S.current.chooseLanguage),
+                  trailing: DropdownButtonHideUnderline(
+                      child: DropdownButton(
+                    items: List.generate(
+                      locales.length,
+                      (index) => DropdownMenuItem(
+                        value: locales.keys.elementAt(index),
+                        child: Text(locales.values.elementAt(index)),
+                      ),
+                    ),
+                    value: state,
+                    onChanged: (value) {
+                      if (value != null) {
+                        context.read<LocaleSelectionCubit>().updateLocale(value);
+                      }
+                    },
+                  )),
+                );
+              },
             ),
             BlocBuilder<ThemeCubit, ThemeMode>(
               builder: (context, state) {
                 return SwitchListTile(
-                  thumbIcon: WidgetStatePropertyAll(state == ThemeMode.dark ? const Icon(CupertinoIcons.moon,color: Colors.white,) : const Icon(CupertinoIcons.sun_min)),
-                  title: const Text("Dark theme"),
+                  thumbIcon: WidgetStatePropertyAll(state == ThemeMode.dark
+                      ? const Icon(
+                          CupertinoIcons.moon,
+                          color: Colors.white,
+                        )
+                      : const Icon(CupertinoIcons.sun_min)),
+                  title: Text(S.current.darkTheme),
                   value: state == ThemeMode.dark,
                   onChanged: (value) {
                     if (value) {
@@ -41,9 +74,23 @@ class _SettingsState extends State<Settings> {
                 );
               },
             ),
-            const ListTile(
-              title: Text("About us"),
-            ),
+            // const ListTile(
+            //   title: Text("About us"),
+            // ),
+            // ListTile(
+            //   trailing: const Icon(Icons.logout),
+            //   title: Text(S.current.logOut),
+            //   onTap: () async {
+            //     await Hive.box(userDataDB).clear();
+            //     await Hive.box(quizDataDB).clear();
+            //     await Hive.box(qualificationDataDB).clear().whenComplete(
+            //       () {
+            //         if (!context.mounted) return;
+            //         context.go("/");
+            //       },
+            //     );
+            //   },
+            // ),
           ],
         ),
       ),
