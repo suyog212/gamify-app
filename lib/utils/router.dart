@@ -6,6 +6,7 @@ import 'package:kGamify/models/questions_models.dart';
 import 'package:kGamify/on_boarding/forgot_password.dart';
 import 'package:kGamify/on_boarding/locale_selection.dart';
 import 'package:kGamify/on_boarding/personal_info.dart';
+import 'package:kGamify/on_boarding/phone_verification.dart';
 import 'package:kGamify/on_boarding/user_authentication.dart';
 import 'package:kGamify/screens/analytics.dart';
 import 'package:kGamify/screens/home_screen.dart';
@@ -15,7 +16,7 @@ import 'package:kGamify/screens/quiz_results.dart';
 import 'package:kGamify/screens/settings.dart';
 import 'package:kGamify/screens/user_profile.dart';
 import 'package:kGamify/utils/constants.dart';
-import 'package:upgrader/upgrader.dart';
+// import 'package:upgrader/upgrader.dart';
 
 class AppRouter {
   static final GoRouter _router = GoRouter(
@@ -71,8 +72,7 @@ class AppRouter {
           path: "/personalInfo",
           builder: (context, state) => const PersonalInfoInput(),
           redirect: (context, state) {
-            if (Hive.box(userDataDB).get("interests") != null &&
-                Hive.box(qualificationDataDB).length != 0) {
+            if (Hive.box(userDataDB).get("interests") == null && Hive.box(qualificationDataDB).length == 0) {
               return "/landingPage";
             }
             return null;
@@ -85,11 +85,24 @@ class AppRouter {
             GoRoute(
               path: "forgotPassword",
               builder: (context, state) => const ForgotPassword(),
+            ),
+            GoRoute(
+              path: "otpVerification",
+              builder: (context, state) {
+                Map<String, dynamic> args = state.extra as Map<String, dynamic>;
+                return PhoneVerification(
+                  phone: args['phone'],
+                  email: args['email'],
+                  name: args['name'],
+                  password: args['password'],
+                  selectedQualification: args['qualification'],
+                );
+              },
             )
           ],
           redirect: (context, state) {
             if (Hive.box(userDataDB).get("isLoggedIn", defaultValue: null) != null) {
-              return "/personalInfo";
+              return "/landingPage";
             }
             return null;
           },
@@ -159,29 +172,22 @@ class AppRouter {
               )
             ]),
       ],
-      refreshListenable:
-          Hive.box(userDataDB).listenable(keys: ["personalInfo", "isLoggedIn", "isLocaleSet"]),
+      refreshListenable: Hive.box(userDataDB).listenable(keys: ["personalInfo", "isLoggedIn", "isLocaleSet"]),
       debugLogDiagnostics: true,
-      observers: [
-        GoRouterObserver()
-      ],
+      observers: [GoRouterObserver()],
+      initialLocation: "/",
       navigatorKey: routerKey);
 
   GoRouter? get router => _router;
 }
-
 
 class GoRouterObserver extends NavigatorObserver {
   var userId = Hive.box(userDataDB).get("personalInfo") != null ? Hive.box(userDataDB).get("personalInfo")['user_id'] : "1";
 
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
-    if(Hive.box(userDataDB).get("personalInfo") != null){
-      mixpanel!.track("PageVisits",properties: {
-        "UserId": userId,
-        "VisitedOn": DateTime.now().toString(),
-        "PageName": route.settings.name
-      });
+    if (Hive.box(userDataDB).get("personalInfo") != null) {
+      mixpanel!.track("PageVisits", properties: {"UserId": userId, "VisitedOn": DateTime.now().toString(), "PageName": route.settings.name});
     }
   }
 
@@ -197,12 +203,8 @@ class GoRouterObserver extends NavigatorObserver {
 
   @override
   void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
-    if(Hive.box(userDataDB).get("personalInfo") != null){
-      mixpanel!.track("PageVisits",properties: {
-        "UserId": userId,
-        "VisitedOn": DateTime.now().toString(),
-        "PageName": newRoute!.settings.name
-      });
+    if (Hive.box(userDataDB).get("personalInfo") != null) {
+      mixpanel!.track("PageVisits", properties: {"UserId": userId, "VisitedOn": DateTime.now().toString(), "PageName": newRoute!.settings.name});
     }
   }
 }

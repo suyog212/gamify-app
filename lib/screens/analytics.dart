@@ -30,10 +30,7 @@ class _AnalyticsState extends State<Analytics> {
     "11-100": 10,
     "100+": 2,
   };
-  Map<String, String> gameModes = {
-    "play_win_gift": "Play and Win",
-    "quick_hit": "Quick Hit"
-  };
+  Map<String, String> gameModes = {"play_win_gift": "Play and Win", "quick_hit": "Quick Hit"};
 
   @override
   void didChangeDependencies() {
@@ -224,13 +221,8 @@ class _AnalyticsState extends State<Analytics> {
                     reverse: true,
                     shrinkWrap: true,
                     elements: state.analytics,
-                    groupBy: (element) => DateFormat("MMMM d,yyyy").format(
-                        DateTime.parse(
-                            element.createdAt ?? DateTime.now().toString())),
-                    groupSeparatorBuilder: (value) => AutoSizeText(
-                        value.toString(),
-                        style: TextStyle(
-                            fontSize: 16.sp, fontWeight: FontWeight.w500)),
+                    groupBy: (element) => DateFormat("MMMM d,yyyy").format(DateTime.parse(element.createdAt ?? DateTime.now().toString())),
+                    groupSeparatorBuilder: (value) => AutoSizeText(value.toString(), style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w500)),
                     itemBuilder: (context, element) {
                       if (element.createdAt == null) {
                         return SizedBox(
@@ -241,42 +233,29 @@ class _AnalyticsState extends State<Analytics> {
                               children: [
                                 AutoSizeText(
                                   "Nothing to show here",
-                                  style:
-                                      Theme.of(context).textTheme.titleMedium,
+                                  style: Theme.of(context).textTheme.titleMedium,
                                   textAlign: TextAlign.center,
                                 ),
                                 AutoSizeText(
                                   "Click here to play your first championship.",
-                                  style:
-                                      Theme.of(context).textTheme.titleMedium,
+                                  style: Theme.of(context).textTheme.titleMedium,
                                 ),
                                 OutlinedButton(
                                     onPressed: () {
                                       context.go("/landingPage");
                                     },
-                                    child: const AutoSizeText(
-                                        "Play Championship")),
+                                    child: const AutoSizeText("Play Championship")),
                               ],
                             )));
                       }
-                      final start = DateFormat("MMMM d h:mm a").format(
-                          DateTime.parse(
-                              "${element.startDate} ${element.startTime}"));
-                      final end = DateFormat("MMMM d h:mm a").format(
-                          DateTime.parse(
-                              "${element.endDate} ${element.endTime}"));
-                      final formattedStartDate = DateTime.parse(
-                          "${element.startDate} ${element.startTime}");
-                      final formattedEndDate = DateTime.parse(
-                          "${element.endDate} ${element.endTime}");
+                      final start = DateFormat("MMMM d h:mm a").format(DateTime.parse("${element.startDate} ${element.startTime}"));
+                      final end = DateFormat("MMMM d h:mm a").format(DateTime.parse("${element.endDate} ${element.endTime}"));
+                      final formattedStartDate = DateTime.parse("${element.startDate} ${element.startTime}");
+                      final formattedEndDate = DateTime.parse("${element.endDate} ${element.endTime}");
                       return Container(
-                          margin: const EdgeInsets.only(top: 8,bottom: 8),
+                          margin: const EdgeInsets.only(top: 8, bottom: 8),
                           padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                              border: Border.fromBorderSide(BorderSide(
-                                  color:
-                                      Theme.of(context).colorScheme.secondary)),
-                              borderRadius: BorderRadius.circular(10)),
+                          decoration: BoxDecoration(border: Border.fromBorderSide(BorderSide(color: Theme.of(context).colorScheme.secondary)), borderRadius: BorderRadius.circular(10)),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -291,23 +270,15 @@ class _AnalyticsState extends State<Analytics> {
                               ListTile(
                                 contentPadding: EdgeInsets.zero,
                                 title: Text(
-                                  element.categoryName ?? "",
+                                  element.champName ?? "",
                                   style: Theme.of(context).textTheme.titleLarge,
                                 ).animate().slideX(),
-                                subtitle: Text(element.champName ?? "")
-                                    .animate()
-                                    .slideY(),
+                                subtitle: Text(element.categoryName ?? "").animate().slideY(),
                                 trailing: LayoutBuilder(
                                   builder: (context, constraints) {
-                                    if (DateTime.parse(
-                                            formattedStartDate.toString())
-                                        .isAfter(DateTime.now())) {
+                                    if (DateTime.parse(formattedStartDate.toString()).isAfter(DateTime.now())) {
                                       return Container(
-                                        decoration: BoxDecoration(
-                                            border: const Border.fromBorderSide(
-                                                BorderSide(color: Colors.grey)),
-                                            borderRadius:
-                                                BorderRadius.circular(5)),
+                                        decoration: BoxDecoration(border: const Border.fromBorderSide(BorderSide(color: Colors.grey)), borderRadius: BorderRadius.circular(5)),
                                         padding: const EdgeInsets.all(3),
                                         child: const Row(
                                           mainAxisSize: MainAxisSize.min,
@@ -319,23 +290,14 @@ class _AnalyticsState extends State<Analytics> {
                                             ),
                                             Text(
                                               " Upcoming",
-                                              style: TextStyle(
-                                                  color: Colors.grey,
-                                                  fontSize: 14),
+                                              style: TextStyle(color: Colors.grey, fontSize: 14),
                                             ),
                                           ],
                                         ),
                                       );
-                                    } else if (DateTime.parse(
-                                            formattedEndDate.toString())
-                                        .isBefore(DateTime.now())) {
+                                    } else if (DateTime.parse(formattedEndDate.toString()).isBefore(DateTime.now())) {
                                       return Container(
-                                        decoration: BoxDecoration(
-                                            border: const Border.fromBorderSide(
-                                                BorderSide(
-                                                    color: Colors.redAccent)),
-                                            borderRadius:
-                                                BorderRadius.circular(5)),
+                                        decoration: BoxDecoration(border: const Border.fromBorderSide(BorderSide(color: Colors.redAccent)), borderRadius: BorderRadius.circular(5)),
                                         padding: const EdgeInsets.all(3),
                                         child: const Row(
                                           mainAxisSize: MainAxisSize.min,
@@ -347,20 +309,14 @@ class _AnalyticsState extends State<Analytics> {
                                             ),
                                             Text(
                                               " Ended",
-                                              style: TextStyle(
-                                                  color: Colors.redAccent,
-                                                  fontSize: 14),
+                                              style: TextStyle(color: Colors.redAccent, fontSize: 14),
                                             ),
                                           ],
                                         ),
                                       );
                                     }
                                     return Container(
-                                      decoration: BoxDecoration(
-                                          border: const Border.fromBorderSide(
-                                              BorderSide(color: Colors.green)),
-                                          borderRadius:
-                                              BorderRadius.circular(5)),
+                                      decoration: BoxDecoration(border: const Border.fromBorderSide(BorderSide(color: Colors.green)), borderRadius: BorderRadius.circular(5)),
                                       padding: const EdgeInsets.all(3),
                                       child: const Row(
                                         mainAxisSize: MainAxisSize.min,
@@ -372,9 +328,7 @@ class _AnalyticsState extends State<Analytics> {
                                           ),
                                           Text(
                                             " Ongoing",
-                                            style: TextStyle(
-                                                color: Colors.green,
-                                                fontSize: 14),
+                                            style: TextStyle(color: Colors.green, fontSize: 14),
                                           ),
                                         ],
                                       ),
@@ -383,9 +337,7 @@ class _AnalyticsState extends State<Analytics> {
                                 ),
                               ),
                               Divider(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .inverseSurface,
+                                color: Theme.of(context).colorScheme.inverseSurface,
                               ),
                               Row(
                                 children: [
@@ -395,17 +347,11 @@ class _AnalyticsState extends State<Analytics> {
                                     child: OverflowBar(
                                       children: [
                                         Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            const Text("Started : "),
-                                            Text(
-                                                "${DateTime.parse(formattedEndDate.toString()).isBefore(DateTime.now()) ? "Ended" : "End"}   : ")
-                                          ],
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [const Text("Started : "), Text("${DateTime.parse(formattedEndDate.toString()).isBefore(DateTime.now()) ? "Ended" : "End"}   : ")],
                                         ),
                                         Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
+                                          crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [Text(start), Text(end)],
                                         )
                                       ],
@@ -414,72 +360,52 @@ class _AnalyticsState extends State<Analytics> {
                                 ],
                               ),
                               Divider(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .inverseSurface,
+                                color: Theme.of(context).colorScheme.inverseSurface,
                                 thickness: 0.2,
                               ),
                               Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   OverflowBar(
                                     children: [
                                       AutoSizeText(
                                         "Score : ${element.totalScore}",
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .titleMedium,
+                                        style: Theme.of(context).textTheme.titleMedium,
                                       ),
                                       const VerticalDivider(),
                                       Tooltip(
-                                          message:
-                                              "Penalty : ${element.totalPenalty}\nBonus : ${element.totalBonus}\nWrong Questions : ${element.totalNegativePoints}",
+                                          message: "Penalty : ${element.totalPenalty}\nBonus : ${element.totalBonus}\nWrong Questions : ${element.totalNegativePoints}",
                                           triggerMode: TooltipTriggerMode.tap,
                                           child: Icon(
                                             Icons.info_outline,
-                                            size: Theme.of(context)
-                                                .textTheme
-                                                .titleMedium
-                                                ?.fontSize,
+                                            size: Theme.of(context).textTheme.titleMedium?.fontSize,
                                           ))
                                     ],
                                   ),
-                                  AutoSizeText(time_ago.format(DateTime.parse(
-                                      element.createdAt ??
-                                          DateTime.now().toString())))
+                                  AutoSizeText(time_ago.format(DateTime.parse(element.createdAt ?? DateTime.now().toString()).toUtc().add(const Duration(hours: 5, minutes: 30))))
                                 ],
                               ),
                               if (element.gameMode == 'play_win_gift')
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    if (Uri.tryParse(element.giftImage ?? "") !=
-                                        null &&
-                                        Uri.tryParse(element.giftImage ?? "")!
-                                            .isAbsolute)AutoSizeText(
-                                      "Reward ",
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleSmall
-                                          ?.copyWith(
-                                              fontWeight: FontWeight.bold),
+                                    if (Uri.tryParse(element.giftImage ?? "") != null && Uri.tryParse(element.giftImage ?? "")!.isAbsolute)
+                                      AutoSizeText(
+                                        "Reward ",
+                                        style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+                                      ),
+                                    SizedBox(
+                                      height: 6.r,
                                     ),
-                                    SizedBox(height: 6.r,),
-                                    if (Uri.tryParse(element.giftImage ?? "") !=
-                                            null &&
-                                        Uri.tryParse(element.giftImage ?? "")!
-                                            .isAbsolute)
+                                    if (Uri.tryParse(element.giftImage ?? "") != null && Uri.tryParse(element.giftImage ?? "")!.isAbsolute)
                                       ClipRRect(
                                         borderRadius: BorderRadius.circular(5),
                                         child: ConstrainedBox(
-                                          constraints: const BoxConstraints(
-                                              maxHeight: 150),
+                                          constraints: const BoxConstraints(maxHeight: 150),
                                           child: CachedNetworkImage(
                                             imageUrl: element.giftImage ?? "",
                                             fit: BoxFit.cover,
-                                            progressIndicatorBuilder:
-                                                (context, url, progress) {
+                                            progressIndicatorBuilder: (context, url, progress) {
                                               return CircularProgressIndicator(
                                                 value: progress.progress,
                                               );
@@ -489,22 +415,21 @@ class _AnalyticsState extends State<Analytics> {
                                       )
                                   ],
                                 ),
-                              SizedBox(height: 8.r,),
+                              SizedBox(
+                                height: 8.r,
+                              ),
                               InkWell(
                                 onTap: () async {
-                                  try{
+                                  try {
                                     showDialog(
                                       barrierDismissible: false,
                                       context: context,
                                       builder: (BuildContext context) {
                                         return AlertDialog(
-                                          shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                              BorderRadius.circular(10)),
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                           content: Column(
                                             mainAxisSize: MainAxisSize.min,
-                                            crossAxisAlignment:
-                                            CrossAxisAlignment.center,
+                                            crossAxisAlignment: CrossAxisAlignment.center,
                                             children: [
                                               const CircularProgressIndicator(),
                                               const Divider(
@@ -512,19 +437,14 @@ class _AnalyticsState extends State<Analytics> {
                                               ),
                                               Text(
                                                 "Loading...",
-                                                style: Theme.of(context)
-                                                    .textTheme
-                                                    .titleMedium,
+                                                style: Theme.of(context).textTheme.titleMedium,
                                               ),
                                             ],
                                           ),
                                         );
                                       },
                                     );
-                                    List<dynamic> data =
-                                    await ChampionshipAnalyticsRepository()
-                                        .getQuestionAnalytics(
-                                        int.parse(element.champId!));
+                                    List<dynamic> data = await ChampionshipAnalyticsRepository().getQuestionAnalytics(int.parse(element.champId!));
                                     if (!context.mounted) return;
                                     Navigator.pop(context);
                                     context.go(
@@ -539,11 +459,11 @@ class _AnalyticsState extends State<Analytics> {
                                         'gift_type': element.giftType ?? "",
                                         'gift_image': element.giftImage ?? "",
                                         'gift_name': element.giftName ?? "",
-                                        'mode_name' : element.modeName,
-                                        'end_time' : "${element.endDate} ${element.endTime}"
+                                        'mode_name': element.modeName,
+                                        'end_time': "${element.endDate} ${element.endTime}"
                                       },
                                     );
-                                    mixpanel!.track("VisitedLeaderboard",properties: {
+                                    mixpanel!.track("VisitedLeaderboard", properties: {
                                       "UserId": Hive.box(userDataDB).get("personalInfo")['user_id'],
                                       "UserKey": Hive.box(userDataDB).get("personalInfo")['user_key'],
                                       "ChampionshipId": int.parse(element.champId!),
@@ -552,7 +472,7 @@ class _AnalyticsState extends State<Analytics> {
                                       "GameMode": element.gameMode,
                                       "VisitedFrom": "Analytics"
                                     });
-                                  } on DioException catch (e){
+                                  } on DioException catch (e) {
                                     context.pop();
                                     snackBarKey.currentState?.showSnackBar(SnackBar(content: Text(errorStrings(e.type))));
                                   }
@@ -560,14 +480,14 @@ class _AnalyticsState extends State<Analytics> {
                                 child: Container(
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(5.r),
-                                    color : Theme.of(context).colorScheme.secondary,
+                                    color: Theme.of(context).colorScheme.secondary,
                                   ),
                                   alignment: Alignment.center,
                                   child: Padding(
                                     padding: const EdgeInsets.all(8.0),
                                     child: Text(
                                       "View Analytics",
-                                      style: TextStyle(fontSize: 14.r,fontWeight: FontWeight.w500),
+                                      style: TextStyle(fontSize: 14.r, fontWeight: FontWeight.w500),
                                     ),
                                   ),
                                 ),
@@ -594,18 +514,17 @@ class _AnalyticsState extends State<Analytics> {
                   style: Theme.of(context).textTheme.titleMedium,
                   textAlign: TextAlign.center,
                 ),
-                if (state.error == "No data found")OutlinedButton(
-                    onPressed: () {
-                      context.go("/landingPage");
-                      // Scaffold.of(context).closeDrawer();
-                    },
-                    child: const AutoSizeText("Play Championship")),
+                if (state.error == "No data found")
+                  OutlinedButton(
+                      onPressed: () {
+                        context.go("/landingPage");
+                        // Scaffold.of(context).closeDrawer();
+                      },
+                      child: const AutoSizeText("Play Championship")),
                 if (state.error != "No data found")
                   TextButton(
                       onPressed: () {
-                        context
-                            .read<ChampionshipAnalyticsCubit>()
-                            .getAllAnalytics();
+                        context.read<ChampionshipAnalyticsCubit>().getAllAnalytics();
                       },
                       child: const AutoSizeText("Retry"))
               ],

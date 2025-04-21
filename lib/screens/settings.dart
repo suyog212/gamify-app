@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kGamify/blocs/theme_cubit.dart';
 import 'package:kGamify/generated/l10n.dart';
-import 'package:kGamify/on_boarding/utils/locale_selection_cubit.dart';
-
 
 class Settings extends StatefulWidget {
   const Settings({super.key});
@@ -14,12 +12,12 @@ class Settings extends StatefulWidget {
 }
 
 class _SettingsState extends State<Settings> {
-  Map<String,String> locales = {
-    "en" : "English",
-    "hi" : "हिन्दी",
-    "da" : "Dansk",
-    "de" : "Deutsch",
-    "sv" : "Svenska",
+  Map<String, String> locales = {
+    "en": "English",
+    "hi": "हिन्दी",
+    "da": "Dansk",
+    "de": "Deutsch",
+    "sv": "Svenska",
   };
   @override
   Widget build(BuildContext context) {
@@ -30,29 +28,29 @@ class _SettingsState extends State<Settings> {
       body: SafeArea(
         child: Column(
           children: [
-            BlocBuilder<LocaleSelectionCubit, String>(
-              builder: (context, state) {
-                return ListTile(
-                  title: Text(S.current.chooseLanguage),
-                  trailing: DropdownButtonHideUnderline(
-                      child: DropdownButton(
-                    items: List.generate(
-                      locales.length,
-                      (index) => DropdownMenuItem(
-                        value: locales.keys.elementAt(index),
-                        child: Text(locales.values.elementAt(index)),
-                      ),
-                    ),
-                    value: state,
-                    onChanged: (value) {
-                      if (value != null) {
-                        context.read<LocaleSelectionCubit>().updateLocale(value);
-                      }
-                    },
-                  )),
-                );
-              },
-            ),
+            // BlocBuilder<LocaleSelectionCubit, String>(
+            //   builder: (context, state) {
+            //     return ListTile(
+            //       title: Text(S.current.chooseLanguage),
+            //       trailing: DropdownButtonHideUnderline(
+            //           child: DropdownButton(
+            //         items: List.generate(
+            //           locales.length,
+            //           (index) => DropdownMenuItem(
+            //             value: locales.keys.elementAt(index),
+            //             child: Text(locales.values.elementAt(index)),
+            //           ),
+            //         ),
+            //         value: state,
+            //         onChanged: (value) {
+            //           if (value != null) {
+            //             context.read<LocaleSelectionCubit>().updateLocale(value);
+            //           }
+            //         },
+            //       )),
+            //     );
+            //   },
+            // ),
             BlocBuilder<ThemeCubit, ThemeMode>(
               builder: (context, state) {
                 return SwitchListTile(
@@ -74,6 +72,12 @@ class _SettingsState extends State<Settings> {
                 );
               },
             ),
+            ListTile(
+              title: const Text("Liscences"),
+              onTap: () {
+                showLicensePage(context: context, applicationVersion: "1.0.0");
+              },
+            )
             // const ListTile(
             //   title: Text("About us"),
             // ),

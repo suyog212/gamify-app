@@ -13,35 +13,36 @@ class InternetAvailableState extends InternetStates {}
 
 class InternetInitialState extends InternetStates {}
 
-class InternetCubit extends Cubit<InternetStates>{
-  InternetCubit() : super(InternetInitialState()){
-    
-    _streamSubscription = _connectivity.onConnectivityChanged.listen((event) {
-      if(event.contains(ConnectivityResult.mobile) || event.contains(ConnectivityResult.wifi)){
-        emit(InternetAvailableState());
-      } else{
-        emit(NoInternetState());
-      }
-      checkConnection();
-    },);
+class InternetCubit extends Cubit<InternetStates> {
+  InternetCubit() : super(InternetInitialState()) {
+    _streamSubscription = _connectivity.onConnectivityChanged.listen(
+      (event) {
+        if (event.contains(ConnectivityResult.mobile) || event.contains(ConnectivityResult.wifi)) {
+          emit(InternetAvailableState());
+        } else {
+          emit(NoInternetState());
+        }
+        checkConnection();
+      },
+    );
   }
 
   final Connectivity _connectivity = Connectivity();
   StreamSubscription? _streamSubscription;
 
-
   void checkConnection() {
-    if(state is NoInternetState){
-      snackBarKey.currentState?.showMaterialBanner(MaterialBanner(
-          content: const Text("No Internet Connection."),
-          backgroundColor: Colors.redAccent,
-          actions: [
-        TextButton(onPressed: () {
-          checkConnection();
-        }, child: const Text(""))
-      ]));
-    } else {
-      snackBarKey.currentState?.clearMaterialBanners();
+    if (snackBarKey.currentState != null) {
+      if (state is NoInternetState) {
+        snackBarKey.currentState?.showMaterialBanner(MaterialBanner(content: const Text("No Internet Connection."), backgroundColor: Colors.redAccent, actions: [
+          TextButton(
+              onPressed: () {
+                checkConnection();
+              },
+              child: const Text(""))
+        ]));
+      } else {
+        snackBarKey.currentState?.clearMaterialBanners();
+      }
     }
   }
 

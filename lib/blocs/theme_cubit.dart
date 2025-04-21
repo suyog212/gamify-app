@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 
 class ThemeCubit extends HydratedCubit<ThemeMode> {
-  ThemeCubit() : super(ThemeMode.light);
+  ThemeCubit() : super(SchedulerBinding.instance.platformDispatcher.platformBrightness == Brightness.light ? ThemeMode.light : ThemeMode.dark);
 
   void updateTheme(ThemeMode theme) => emit(theme);
 

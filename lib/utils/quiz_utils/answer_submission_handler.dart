@@ -1,8 +1,8 @@
 // import 'package:flutter/material.dart';
 // import 'package:flutter_bloc/flutter_bloc.dart';
-// import 'package:gamify_test/blocs/question_view_cubit.dart';
-// import 'package:gamify_test/utils/constants.dart';
-// import 'package:gamify_test/utils/quiz_utils/championship_score_engine.dart';
+// import 'package:kgamify/blocs/question_view_cubit.dart';
+// import 'package:kgamify/utils/constants.dart';
+// import 'package:kgamify/utils/quiz_utils/championship_score_engine.dart';
 // import 'package:go_router/go_router.dart';
 // import 'package:hive_flutter/adapters.dart';
 //

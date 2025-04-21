@@ -74,62 +74,49 @@ class ChampionshipInformationCard extends StatefulWidget {
       this.giftDescription,
       this.noOfUserPlayed,
       this.questionCount,
-        required this.uniqueId});
+      required this.uniqueId});
 
   @override
-  State<ChampionshipInformationCard> createState() =>
-      _ChampionshipInformationCardState();
+  State<ChampionshipInformationCard> createState() => _ChampionshipInformationCardState();
 }
 
-class _ChampionshipInformationCardState
-    extends State<ChampionshipInformationCard> {
+class _ChampionshipInformationCardState extends State<ChampionshipInformationCard> {
   @override
   Widget build(BuildContext context) {
-    final formatter =
-        NumberFormat.compact(locale: Platform.localeName, explicitSign: false);
-    final formattedStartDate =
-        DateTime.parse("${widget.startDate} ${widget.startTime}");
-    final formattedEndDate =
-        DateTime.parse("${widget.endDate} ${widget.endTime}");
-    final start = DateFormat("MMMM d h:mm a")
-        .format(DateTime.parse("${widget.startDate} ${widget.startTime}"));
-    final end = DateFormat("MMMM d h:mm a")
-        .format(DateTime.parse("${widget.endDate} ${widget.endTime}"));
-    Map<String, String> gameModes = {
-      "play_win_gift": "Play and Win",
-      "quick_hit": "Quick Hit"
-    };
+    final formatter = NumberFormat.compact(locale: Platform.localeName, explicitSign: false);
+    final formattedStartDate = DateTime.parse("${widget.startDate} ${widget.startTime}");
+    final formattedEndDate = DateTime.parse("${widget.endDate} ${widget.endTime}");
+    final start = DateFormat("MMMM d h:mm a").format(DateTime.parse("${widget.startDate} ${widget.startTime}"));
+    final end = DateFormat("MMMM d h:mm a").format(DateTime.parse("${widget.endDate} ${widget.endTime}"));
+    Map<String, String> gameModes = {"play_win_gift": "Play and Win", "quick_hit": "Quick Hit"};
     return BlocListener<QuestionsBloc, QuestionsState>(
       listener: (context, state) {
         if (state is QuestionErrorState) {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text(state.error.toString())));
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.error.toString())));
         }
       },
       child: InkWell(
         borderRadius: BorderRadius.circular(10),
         onTap: () {
-          mixpanel!.track("ChampionshipInitiated",properties: {
-            "UserId" : Hive.box(userDataDB).get("personalInfo")['user_id'],
-            "TimeStamp" : DateTime.now().toString(),
-            "ChampionshipId" : widget.champId,
-            "CategoryId" : widget.categoryId,
-            "ModeId" : widget.modeId,
-            "TeacherId" : widget.teacherId,
-            "NoOfQuestions" : widget.noOfQuestions,
-            "UserQualification" : widget.userQualification ?? "",
+          mixpanel!.track("ChampionshipInitiated", properties: {
+            "UserId": Hive.box(userDataDB).get("personalInfo")['user_id'],
+            "TimeStamp": DateTime.now().toString(),
+            "ChampionshipId": widget.champId,
+            "CategoryId": widget.categoryId,
+            "ModeId": widget.modeId,
+            "TeacherId": widget.teacherId,
+            "NoOfQuestions": widget.noOfQuestions,
+            "UserQualification": widget.userQualification ?? "",
           });
           // else {
           showDialog(
             context: context,
             builder: (context) {
               return StatefulBuilder(
-                builder: (BuildContext context,
-                    void Function(void Function()) setState) {
+                builder: (BuildContext context, void Function(void Function()) setState) {
                   return Dialog(
                     insetPadding: const EdgeInsets.all(16),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     // child: ,
                     // title: Text(widget.categoryName),
                     child: Material(
@@ -138,238 +125,227 @@ class _ChampionshipInformationCardState
                       child: Padding(
                         padding: const EdgeInsets.all(12.0),
                         child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                              maxHeight:
-                                  MediaQuery.sizeOf(context).height * 0.6),
+                          constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.6),
                           // heightFactor: 0.6,
                           child: Scrollbar(
-                            child: SingleChildScrollView(
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        "Rules",
-                                        style: TextStyle(
-                                            fontSize: 20.sp,
-                                            fontWeight: FontWeight.w600),
-                                      ),
-                                      IconButton(onPressed: () => context.pop(), icon: const Icon(Icons.close))
-                                    ],
-                                  ),
-                                  HtmlWidget(widget.gameModeRules!),
-                                  const Divider(
-                                    color: Colors.transparent,
-                                  ),
-                                  if (widget.modeName == "play_win_gift")
-                                    // if (false)
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        AutoSizeText(
-                                          "Prizes you can win",
-                                          style: TextStyle(
-                                              fontSize: 14.sp,
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                        SizedBox(
-                                          height: 6.r,
-                                        ),
-                                        if ((widget.giftImage != null &&
-                                                widget.giftImage!.isNotEmpty) &&
-                                            Uri.tryParse(
-                                                    widget.giftImage ?? "") !=
-                                                null &&
-                                            Uri.tryParse(
-                                                    widget.giftImage ?? "")!
-                                                .isAbsolute)
-                                          Column(
-                                            children: [
-                                              ClipRRect(
-                                                borderRadius:
-                                                    BorderRadius.circular(10),
-                                                child: CachedNetworkImage(
-                                                  imageUrl: widget.giftImage!,
-                                                  progressIndicatorBuilder:
-                                                      (context, url, progress) {
-                                                    return CircularProgressIndicator(
-                                                      value: progress.progress,
-                                                    );
-                                                  },
-                                                ),
-                                              ),
-                                              SizedBox(
-                                                height: 6.r,
-                                              ),
-                                            ],
-                                          ),
-                                        HtmlWidget(
-                                          widget.giftDescription ?? "",
-                                          textStyle: TextStyle(
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .inverseSurface),
-                                        )
-                                      ],
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      "Rules",
+                                      style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w600),
                                     ),
-                                  const Divider(
-                                    color: Colors.transparent,
-                                  ),
-                                  Row(
+                                    IconButton(onPressed: () => context.pop(), icon: const Icon(Icons.close))
+                                  ],
+                                ),
+                                Expanded(
+                                  child: SingleChildScrollView(
+                                      child: Column(
                                     children: [
-                                      Expanded(
-                                        child: LayoutBuilder(
-                                          builder: (context, constraints) {
-                                            // if (DateTime.parse(formattedEndDate.toString()).isBefore(DateTime.now())) {
-                                            //   return Row(
-                                            //     mainAxisAlignment:MainAxisAlignment.end,
-                                            //     children: [
-                                            //       Expanded(
-                                            //         child: FilledButton(
-                                            //             onPressed: () async {
-                                            //               showDialog(
-                                            //                 barrierDismissible: false,
-                                            //                 context: context,
-                                            //                 builder: (BuildContext context) {
-                                            //                   return AlertDialog(
-                                            //                     backgroundColor: Colors.transparent,
-                                            //                     shape: RoundedRectangleBorder(
-                                            //                         borderRadius:
-                                            //                         BorderRadius.circular(10)),
-                                            //                     content: Column(
-                                            //                       mainAxisSize: MainAxisSize.min,
-                                            //                       crossAxisAlignment:
-                                            //                       CrossAxisAlignment.center,
-                                            //                       children: [
-                                            //                         const CircularProgressIndicator(),
-                                            //                         const Divider(
-                                            //                           color: Colors.transparent,
-                                            //                         ),
-                                            //                         Text(
-                                            //                           "Loading...",
-                                            //                           style: Theme.of(context)
-                                            //                               .textTheme
-                                            //                               .titleMedium,
-                                            //                         ),
-                                            //                       ],
-                                            //                     ),
-                                            //                   );
-                                            //                 },
-                                            //               );
-                                            //               try{
-                                            //                 List<dynamic> data =
-                                            //                 await ChampionshipAnalyticsRepository()
-                                            //                     .getQuestionAnalytics(
-                                            //                     int.parse(widget.champId));
-                                            //                 if (!context.mounted) return;
-                                            //                 Navigator.pop(context);
-                                            //                 context.push(
-                                            //                     "/landingPage/quizAnalytics",
-                                            //                     extra: {
-                                            //                       "data": data,
-                                            //                       "category_name": widget.categoryName,
-                                            //                       "champ_name": widget.champName,
-                                            //                       "start_time": formattedStartDate.toString(),
-                                            //                       'champ_id': int.parse(widget.champId),
-                                            //                       'gift_description':
-                                            //                       widget.giftDescription ?? "",
-                                            //                       'gift_type': "",
-                                            //                       'gift_image': widget.giftImage ?? "",
-                                            //                       'gift_name': "",
-                                            //                       'mode_name' : widget.modeName
-                                            //                     });
-                                            //               } catch (e){
-                                            //                 snackBarKey.currentState?.showSnackBar(const SnackBar(content: Text("Something went wrong.")));
-                                            //                 context.pop();
-                                            //               }
-                                            //             },
-                                            //             child: const AutoSizeText(
-                                            //                 "View analytics")),
-                                            //       ),
-                                            //     ],
-                                            //   );
-                                            // }
-                                            // if (DateTime.parse(formattedEndDate.toString()).isBefore(DateTime.now())) {
-                                            //   return const Row(
-                                            //     // mainAxisAlignment: MainAxisAlignment.end,
-                                            //     children: [
-                                            //       Expanded(
-                                            //           child: FilledButton(
-                                            //               onPressed: null,
-                                            //               child: AutoSizeText(
-                                            //                   "Yet to start",
-                                            //               ),
-                                            //           ),
-                                            //       ),
-                                            //     ],
-                                            //   );
-                                            // }
-                                            return FutureBuilder(
-                                              future: ChampionshipRepository().fetchChampDetails(int.parse(widget.champId)),
-                                              builder: (context, snapshot) {
-                                                if (snapshot.connectionState ==ConnectionState.waiting) {
-                                                  return const Center(
-                                                    child: CircularProgressIndicator.adaptive(),
+                                      HtmlWidget(
+                                        widget.gameModeRules!,
+                                        enableCaching: true,
+                                      ),
+                                      const Divider(
+                                        color: Colors.transparent,
+                                      ),
+                                      if (widget.modeName == "play_win_gift")
+                                        // if (false)
+                                        Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            AutoSizeText(
+                                              "Reward",
+                                              style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold),
+                                            ),
+                                            SizedBox(
+                                              height: 6.r,
+                                            ),
+                                            if ((widget.giftImage != null && widget.giftImage!.isNotEmpty) &&
+                                                Uri.tryParse(widget.giftImage ?? "") != null &&
+                                                Uri.tryParse(widget.giftImage ?? "")!.isAbsolute)
+                                              Column(
+                                                children: [
+                                                  ClipRRect(
+                                                    borderRadius: BorderRadius.circular(10),
+                                                    child: CachedNetworkImage(
+                                                      imageUrl: widget.giftImage!,
+                                                      progressIndicatorBuilder: (context, url, progress) {
+                                                        return CircularProgressIndicator(
+                                                          value: progress.progress,
+                                                        );
+                                                      },
+                                                    ),
+                                                  ),
+                                                  SizedBox(
+                                                    height: 6.r,
+                                                  ),
+                                                ],
+                                              ),
+                                            HtmlWidget(
+                                              widget.giftDescription ?? "",
+                                              textStyle: TextStyle(color: Theme.of(context).colorScheme.inverseSurface),
+                                            )
+                                          ],
+                                        ),
+                                      const Divider(
+                                        color: Colors.transparent,
+                                      ),
+                                    ],
+                                  )),
+                                ),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: LayoutBuilder(
+                                        builder: (context, constraints) {
+                                          // if (DateTime.parse(formattedEndDate.toString()).isBefore(DateTime.now())) {
+                                          //   return Row(
+                                          //     mainAxisAlignment:MainAxisAlignment.end,
+                                          //     children: [
+                                          //       Expanded(
+                                          //         child: FilledButton(
+                                          //             onPressed: () async {
+                                          //               showDialog(
+                                          //                 barrierDismissible: false,
+                                          //                 context: context,
+                                          //                 builder: (BuildContext context) {
+                                          //                   return AlertDialog(
+                                          //                     backgroundColor: Colors.transparent,
+                                          //                     shape: RoundedRectangleBorder(
+                                          //                         borderRadius:
+                                          //                         BorderRadius.circular(10)),
+                                          //                     content: Column(
+                                          //                       mainAxisSize: MainAxisSize.min,
+                                          //                       crossAxisAlignment:
+                                          //                       CrossAxisAlignment.center,
+                                          //                       children: [
+                                          //                         const CircularProgressIndicator(),
+                                          //                         const Divider(
+                                          //                           color: Colors.transparent,
+                                          //                         ),
+                                          //                         Text(
+                                          //                           "Loading...",
+                                          //                           style: Theme.of(context)
+                                          //                               .textTheme
+                                          //                               .titleMedium,
+                                          //                         ),
+                                          //                       ],
+                                          //                     ),
+                                          //                   );
+                                          //                 },
+                                          //               );
+                                          //               try{
+                                          //                 List<dynamic> data =
+                                          //                 await ChampionshipAnalyticsRepository()
+                                          //                     .getQuestionAnalytics(
+                                          //                     int.parse(widget.champId));
+                                          //                 if (!context.mounted) return;
+                                          //                 Navigator.pop(context);
+                                          //                 context.push(
+                                          //                     "/landingPage/quizAnalytics",
+                                          //                     extra: {
+                                          //                       "data": data,
+                                          //                       "category_name": widget.categoryName,
+                                          //                       "champ_name": widget.champName,
+                                          //                       "start_time": formattedStartDate.toString(),
+                                          //                       'champ_id': int.parse(widget.champId),
+                                          //                       'gift_description':
+                                          //                       widget.giftDescription ?? "",
+                                          //                       'gift_type': "",
+                                          //                       'gift_image': widget.giftImage ?? "",
+                                          //                       'gift_name': "",
+                                          //                       'mode_name' : widget.modeName
+                                          //                     });
+                                          //               } catch (e){
+                                          //                 snackBarKey.currentState?.showSnackBar(const SnackBar(content: Text("Something went wrong.")));
+                                          //                 context.pop();
+                                          //               }
+                                          //             },
+                                          //             child: const AutoSizeText(
+                                          //                 "View analytics")),
+                                          //       ),
+                                          //     ],
+                                          //   );
+                                          // }
+                                          // if (DateTime.parse(formattedEndDate.toString()).isBefore(DateTime.now())) {
+                                          //   return const Row(
+                                          //     // mainAxisAlignment: MainAxisAlignment.end,
+                                          //     children: [
+                                          //       Expanded(
+                                          //           child: FilledButton(
+                                          //               onPressed: null,
+                                          //               child: AutoSizeText(
+                                          //                   "Yet to start",
+                                          //               ),
+                                          //           ),
+                                          //       ),
+                                          //     ],
+                                          //   );
+                                          // }
+                                          return FutureBuilder(
+                                            future: ChampionshipRepository().fetchChampDetails(int.parse(widget.champId)),
+                                            builder: (context, snapshot) {
+                                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                                return const Center(
+                                                  child: CircularProgressIndicator.adaptive(),
+                                                );
+                                              }
+                                              if (snapshot.hasData) {
+                                                if (snapshot.data!.first.champStatus == "1" && snapshot.data!.first.categoryStatus == "1") {
+                                                  return FutureBuilder(
+                                                    future: API().sendRequests.get("/check_user_played.php?user_id=${Hive.box(userDataDB).get("personalInfo")['user_id']}&champ_id=${widget.champId}"),
+                                                    builder: (context, snapshot) {
+                                                      if (snapshot.connectionState == ConnectionState.waiting) {
+                                                        return const Center(
+                                                          child: CircularProgressIndicator(),
+                                                        );
+                                                      }
+                                                      if (snapshot.hasError &&
+                                                          DateTime.parse(formattedStartDate.toString()).isBefore(DateTime.now()) &&
+                                                          DateTime.parse(formattedEndDate.toString()).isAfter(DateTime.now())) {
+                                                        return FilledButton(
+                                                            onPressed: () async {
+                                                              var userId = Hive.box(userDataDB).get("personalInfo")['user_id'];
+                                                              context.read<QuestionsBloc>().getQuestions(
+                                                                  widget.modeId,
+                                                                  widget.champName,
+                                                                  widget.timeMinutes,
+                                                                  widget.noOfQuestions,
+                                                                  widget.modeName,
+                                                                  widget.champId,
+                                                                  widget.timeMinutes,
+                                                                  userId,
+                                                                  context,
+                                                                  widget.teacherDetailsModel.teacherName ?? "",
+                                                                  widget.teacherId,
+                                                                  widget.categoryId);
+                                                            },
+                                                            child: const Text("Play"));
+                                                      }
+                                                      if (snapshot.hasData || DateTime.parse(formattedEndDate.toString()).isAfter(DateTime.now())) {
+                                                        return navigateToChampAnalytics(context, widget.champId, widget.modeId.toString());
+                                                      }
+                                                      return const FilledButton(onPressed: null, child: Text("Ended"));
+                                                    },
                                                   );
                                                 }
-                                                if (snapshot.hasData) {
-                                                  if (snapshot.data!.first.champStatus == "1" &&snapshot.data!.first.categoryStatus =="1") {
-                                                    return FutureBuilder(
-                                                      future: API().sendRequests.get(
-                                                          "/check_user_played.php?user_id=${Hive.box(userDataDB).get("personalInfo")['user_id']}&champ_id=${widget.champId}"),
-                                                      builder: (context, snapshot) {
-                                                        if (snapshot.connectionState == ConnectionState.waiting) {
-                                                          return const Center(
-                                                            child:CircularProgressIndicator(),
-                                                          );
-                                                        }
-                                                        if (snapshot.hasError && DateTime.parse(formattedStartDate.toString()).isBefore(DateTime.now()) && DateTime.parse(formattedEndDate.toString()).isAfter(DateTime.now())) {
-                                                          return FilledButton(
-                                                              onPressed: () async {
-                                                                var userId = Hive.box(userDataDB).get("personalInfo")['user_id'];
-                                                                context.read<QuestionsBloc>().getQuestions(
-                                                                    widget.modeId,
-                                                                    widget.categoryName,
-                                                                    widget.timeMinutes,
-                                                                    widget.noOfQuestions,
-                                                                    widget.modeName,
-                                                                    widget.champId,
-                                                                    widget.timeMinutes,
-                                                                    userId,
-                                                                    context,
-                                                                    widget.teacherDetailsModel.teacherName ?? "",
-                                                                  widget.teacherId,
-                                                                  widget.categoryId
-                                                                );
-                                                              },
-                                                              child: const Text("Play"));
-                                                        }
-                                                        if(snapshot.hasData || !DateTime.parse(formattedEndDate.toString()).isAfter(DateTime.now())) {
-                                                          return navigateToChampAnalytics(context, widget.champId, widget.modeId.toString());
-                                                        }
-                                                        return const FilledButton(onPressed: null, child: Text("Ended"));
-                                                      },
-                                                    );
-                                                  }
-                                                  return const Text("Not Available");
-                                                }
-                                                return const FilledButton(
-                                                    onPressed: null,
-                                                    child: Text("Not available"));
-                                              },
-                                            );
-                                          },
-                                        ),
+                                                return const Text("Not Available");
+                                              }
+                                              return const FilledButton(onPressed: null, child: Text("Not available"));
+                                            },
+                                          );
+                                        },
                                       ),
-                                    ],
-                                  )
-                                ],
-                              ),
+                                    ),
+                                  ],
+                                )
+                              ],
                             ),
                           ),
                         ),
@@ -384,10 +360,7 @@ class _ChampionshipInformationCardState
         child: Container(
           margin: const EdgeInsets.symmetric(vertical: 8),
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              border: const Border.fromBorderSide(
-                  BorderSide(color: Colors.orange, width: 1.5))),
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), border: const Border.fromBorderSide(BorderSide(color: Colors.orange, width: 1.5))),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -460,13 +433,9 @@ class _ChampionshipInformationCardState
                 subtitle: Text(widget.categoryName).animate().slideY(),
                 trailing: LayoutBuilder(
                   builder: (context, constraints) {
-                    if (DateTime.parse(formattedStartDate.toString())
-                        .isAfter(DateTime.now())) {
+                    if (DateTime.parse(formattedStartDate.toString()).isAfter(DateTime.now())) {
                       return Container(
-                        decoration: BoxDecoration(
-                            border: const Border.fromBorderSide(
-                                BorderSide(color: Colors.grey)),
-                            borderRadius: BorderRadius.circular(5)),
+                        decoration: BoxDecoration(border: const Border.fromBorderSide(BorderSide(color: Colors.grey)), borderRadius: BorderRadius.circular(5)),
                         padding: const EdgeInsets.all(3),
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
@@ -478,19 +447,14 @@ class _ChampionshipInformationCardState
                             ),
                             Text(
                               " Upcoming",
-                              style:
-                                  TextStyle(color: Colors.grey, fontSize: 14),
+                              style: TextStyle(color: Colors.grey, fontSize: 14),
                             ),
                           ],
                         ),
                       );
-                    } else if (DateTime.parse(formattedEndDate.toString())
-                        .isBefore(DateTime.now())) {
+                    } else if (DateTime.parse(formattedEndDate.toString()).isBefore(DateTime.now())) {
                       return Container(
-                        decoration: BoxDecoration(
-                            border: const Border.fromBorderSide(
-                                BorderSide(color: Colors.redAccent)),
-                            borderRadius: BorderRadius.circular(5)),
+                        decoration: BoxDecoration(border: const Border.fromBorderSide(BorderSide(color: Colors.redAccent)), borderRadius: BorderRadius.circular(5)),
                         padding: const EdgeInsets.all(3),
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
@@ -502,18 +466,14 @@ class _ChampionshipInformationCardState
                             ),
                             Text(
                               " Ended",
-                              style: TextStyle(
-                                  color: Colors.redAccent, fontSize: 14),
+                              style: TextStyle(color: Colors.redAccent, fontSize: 14),
                             ),
                           ],
                         ),
                       );
                     }
                     return Container(
-                      decoration: BoxDecoration(
-                          border: const Border.fromBorderSide(
-                              BorderSide(color: Colors.green)),
-                          borderRadius: BorderRadius.circular(5)),
+                      decoration: BoxDecoration(border: const Border.fromBorderSide(BorderSide(color: Colors.green)), borderRadius: BorderRadius.circular(5)),
                       padding: const EdgeInsets.all(3),
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
@@ -541,9 +501,7 @@ class _ChampionshipInformationCardState
                 children: [
                   Text(
                     "${widget.noOfQuestions} Questions | ${formatChampionshipTime(quizSubmissionTime(widget.timeMinutes))}",
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: Theme.of(context).textTheme.titleMedium!.fontSize),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: Theme.of(context).textTheme.titleMedium!.fontSize),
                   ),
                   // Icon(Icons.auto_graph),
                   // Spacer(),
@@ -552,12 +510,8 @@ class _ChampionshipInformationCardState
                     children: [
                       const Icon(Icons.person),
                       Text(
-                        formatter
-                            .format(int.parse(widget.noOfUserPlayed ?? "0")),
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium!
-                            .copyWith(fontWeight: FontWeight.normal),
+                        formatter.format(int.parse(widget.noOfUserPlayed ?? "0")),
+                        style: Theme.of(context).textTheme.titleMedium!.copyWith(fontWeight: FontWeight.normal),
                       ),
                     ],
                   ),
@@ -595,17 +549,11 @@ class _ChampionshipInformationCardState
                               children: [
                                 const Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    AutoSizeText("Starts : "),
-                                    AutoSizeText("Ends   : ")
-                                  ],
+                                  children: [AutoSizeText("Starts : "), AutoSizeText("Ends   : ")],
                                 ),
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    AutoSizeText(start),
-                                    AutoSizeText(end)
-                                  ],
+                                  children: [AutoSizeText(start), AutoSizeText(end)],
                                 )
                               ],
                             )
@@ -620,95 +568,63 @@ class _ChampionshipInformationCardState
                           context,
                           PageRouteBuilder(
                             opaque: false,
-                            barrierColor: Theme.of(context)
-                                .colorScheme
-                                .inverseSurface
-                                .withValues(alpha:  0.4),
+                            barrierColor: Theme.of(context).colorScheme.inverseSurface.withValues(alpha: 0.4),
                             barrierDismissible: true,
                             fullscreenDialog: true,
-                            pageBuilder:
-                                (context, animation, secondaryAnimation) {
+                            pageBuilder: (context, animation, secondaryAnimation) {
                               return Center(
                                 child: Padding(
                                   padding: const EdgeInsets.all(16.0),
                                   child: DecoratedBox(
-                                    decoration: BoxDecoration(
-                                        color: Theme.of(context)
-                                            .scaffoldBackgroundColor,
-                                        borderRadius:
-                                            BorderRadius.circular(10)),
+                                    decoration: BoxDecoration(color: Theme.of(context).scaffoldBackgroundColor, borderRadius: BorderRadius.circular(10)),
                                     child: Padding(
                                       padding: const EdgeInsets.all(8.0),
                                       child: Column(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
                                           Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                             children: [
                                               AutoSizeText(
                                                 "Teacher Details",
-                                                style: Theme.of(context)
-                                                    .textTheme
-                                                    .titleLarge,
+                                                style: Theme.of(context).textTheme.titleLarge,
                                               ),
-                                              IconButton(
-                                                  onPressed: () =>
-                                                      Navigator.pop(context),
-                                                  icon: const Icon(Icons.close))
+                                              IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close))
                                             ],
                                           ),
                                           Hero(
-                                            tag:
-                                                "${widget.teacherDetailsModel.teacherName}${widget.champId}${widget.modeName}",
+                                            tag: "${widget.teacherDetailsModel.teacherName}${widget.champId}${widget.modeName}",
                                             child: CircleAvatar(
-                                              backgroundImage:
-                                                  CachedNetworkImageProvider(
-                                                widget.uploadImg == ""
-                                                    ? "https://i.pinimg.com/736x/c0/27/be/c027bec07c2dc08b9df60921dfd539bd.jpg"
-                                                    : widget.uploadImg,
+                                              backgroundImage: CachedNetworkImageProvider(
+                                                widget.uploadImg == "" ? "https://i.pinimg.com/736x/c0/27/be/c027bec07c2dc08b9df60921dfd539bd.jpg" : widget.uploadImg,
                                               ),
-                                              radius: MediaQuery.sizeOf(context)
-                                                      .width *
-                                                  0.14,
+                                              radius: MediaQuery.sizeOf(context).width * 0.14,
                                             ),
                                           ),
                                           const Divider(
                                             color: Colors.transparent,
                                           ),
                                           Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.center,
+                                            crossAxisAlignment: CrossAxisAlignment.center,
                                             children: [
                                               Row(
                                                 mainAxisSize: MainAxisSize.min,
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.center,
+                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                crossAxisAlignment: CrossAxisAlignment.center,
                                                 children: [
                                                   AutoSizeText(
-                                                    widget.teacherDetailsModel
-                                                        .teacherName!,
-                                                    style: Theme.of(context)
-                                                        .textTheme
-                                                        .titleLarge,
+                                                    widget.teacherDetailsModel.teacherName!,
+                                                    style: Theme.of(context).textTheme.titleLarge,
                                                   ),
-                                                  const SizedBox(width: 4,),
+                                                  const SizedBox(
+                                                    width: 4,
+                                                  ),
                                                   Visibility(
-                                                    visible: widget
-                                                            .teacherDetailsModel
-                                                            .status ==
-                                                        "1",
+                                                    visible: widget.teacherDetailsModel.status == "1",
                                                     child: Icon(
                                                       Icons.verified,
-                                                      color: Theme.of(context)
-                                                          .colorScheme
-                                                          .secondary,
-                                                      size: Theme.of(context)
-                                                          .textTheme
-                                                          .titleMedium!
-                                                          .fontSize,
+                                                      color: Theme.of(context).colorScheme.secondary,
+                                                      size: Theme.of(context).textTheme.titleMedium!.fontSize,
                                                     ),
                                                   )
                                                 ],
@@ -717,18 +633,11 @@ class _ChampionshipInformationCardState
                                                 color: Colors.transparent,
                                               ),
                                               DecoratedBox(
-                                                decoration: BoxDecoration(
-                                                    color: Colors.grey
-                                                        .withValues(alpha: 0.1),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            10)),
+                                                decoration: BoxDecoration(color: Colors.grey.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
                                                 child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(8.0),
+                                                  padding: const EdgeInsets.all(8.0),
                                                   child: Column(
-                                                    mainAxisSize:
-                                                        MainAxisSize.min,
+                                                    mainAxisSize: MainAxisSize.min,
                                                     children: [
                                                       Row(
                                                         // mainAxisAlignment : MainAxisAlignment.start,
@@ -736,28 +645,17 @@ class _ChampionshipInformationCardState
                                                         children: [
                                                           Expanded(
                                                               child: Column(
-                                                                mainAxisSize: MainAxisSize.max,
-                                                                mainAxisAlignment: MainAxisAlignment.start,
-                                                            crossAxisAlignment:
-                                                                CrossAxisAlignment
-                                                                    .start,
+                                                            mainAxisSize: MainAxisSize.max,
+                                                            mainAxisAlignment: MainAxisAlignment.start,
+                                                            crossAxisAlignment: CrossAxisAlignment.start,
                                                             children: [
                                                               AutoSizeText(
                                                                 "Department",
-                                                                style: Theme.of(
-                                                                        context)
-                                                                    .textTheme
-                                                                    .titleMedium
-                                                                    ?.copyWith(
-                                                                        fontWeight:
-                                                                            FontWeight.bold),
+                                                                style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                                                               ),
                                                               AutoSizeText(
                                                                 "${widget.teacherDetailsModel.department}",
-                                                                style: Theme.of(
-                                                                        context)
-                                                                    .textTheme
-                                                                    .titleMedium,
+                                                                style: Theme.of(context).textTheme.titleMedium,
                                                                 maxLines: 2,
                                                               )
                                                             ],
@@ -765,63 +663,38 @@ class _ChampionshipInformationCardState
                                                           const VerticalDivider(),
                                                           Expanded(
                                                               child: Column(
-                                                                mainAxisAlignment: MainAxisAlignment.start,
-                                                            crossAxisAlignment:
-                                                                CrossAxisAlignment
-                                                                    .start,
+                                                            mainAxisAlignment: MainAxisAlignment.start,
+                                                            crossAxisAlignment: CrossAxisAlignment.start,
                                                             children: [
                                                               AutoSizeText(
                                                                 "Institute",
-                                                                style: Theme.of(
-                                                                        context)
-                                                                    .textTheme
-                                                                    .titleMedium
-                                                                    ?.copyWith(
-                                                                        fontWeight:
-                                                                            FontWeight.bold),
+                                                                style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                                                               ),
                                                               AutoSizeText(
                                                                 "${widget.teacherDetailsModel.institute}",
-                                                                style: Theme.of(
-                                                                        context)
-                                                                    .textTheme
-                                                                    .titleMedium,
+                                                                style: Theme.of(context).textTheme.titleMedium,
                                                               )
                                                             ],
                                                           ))
                                                         ],
                                                       ),
                                                       const Divider(
-                                                        color:
-                                                            Colors.transparent,
+                                                        color: Colors.transparent,
                                                       ),
                                                       Row(
                                                         children: [
                                                           Expanded(
                                                               child: Column(
-                                                                mainAxisAlignment: MainAxisAlignment.start,
-                                                            crossAxisAlignment:
-                                                                CrossAxisAlignment
-                                                                    .start,
+                                                            mainAxisAlignment: MainAxisAlignment.start,
+                                                            crossAxisAlignment: CrossAxisAlignment.start,
                                                             children: [
                                                               AutoSizeText(
                                                                 "Championships Created",
-                                                                style: Theme.of(
-                                                                        context)
-                                                                    .textTheme
-                                                                    .titleMedium
-                                                                    ?.copyWith(
-                                                                        fontWeight:
-                                                                            FontWeight.bold),
+                                                                style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                                                               ),
                                                               AutoSizeText(
-                                                                widget.teacherDetailsModel
-                                                                        .champsCreated ??
-                                                                    "0",
-                                                                style: Theme.of(
-                                                                        context)
-                                                                    .textTheme
-                                                                    .titleMedium,
+                                                                widget.teacherDetailsModel.champsCreated ?? "0",
+                                                                style: Theme.of(context).textTheme.titleMedium,
                                                               )
                                                             ],
                                                           )),
@@ -846,11 +719,13 @@ class _ChampionshipInformationCardState
                           ));
                     },
                     child: Hero(
-                      tag:
-                          "${widget.teacherDetailsModel.teacherName}${widget.champId}${widget.modeName}",
+                      tag: "${widget.teacherDetailsModel.teacherName}${widget.champId}${widget.modeName}",
                       child: CircleAvatar(
-                        backgroundImage: Validator.url(widget.uploadImg) ? CachedNetworkImageProvider(widget.uploadImg,
-                        ) : null,
+                        backgroundImage: Validator.url(widget.uploadImg)
+                            ? CachedNetworkImageProvider(
+                                widget.uploadImg,
+                              )
+                            : null,
                         // NetworkImage(
                         //     widget.uploadImg == "" ?
                         //     "https://i.pinimg.com/736x/c0/27/be/c027bec07c2dc08b9df60921dfd539bd.jpg" : widget.uploadImg),

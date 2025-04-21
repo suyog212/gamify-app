@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
+
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/cupertino.dart';
@@ -18,7 +19,6 @@ import 'package:kGamify/utils/link_classifier.dart';
 import 'package:kGamify/utils/quiz_utils/championship_score_engine.dart';
 import 'package:kGamify/utils/widgets/option_tile.dart';
 import 'package:kGamify/utils/widgets/question_tile.dart';
-import 'package:no_screenshot/no_screenshot.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class QuestionView extends StatefulWidget {
@@ -41,10 +41,9 @@ class QuestionView extends StatefulWidget {
       required this.champId,
       required this.teacherName,
       required this.expectedTime,
-        required this.modeId,
-        required this.teacherId,
-        required this.categoryId
-      });
+      required this.modeId,
+      required this.teacherId,
+      required this.categoryId});
 
   @override
   State<QuestionView> createState() => _QuestionViewState();
@@ -61,8 +60,7 @@ class _QuestionViewState extends State<QuestionView> {
   final List<String> _options = ['A', 'B', 'C', 'D', 'E'];
   final ListNotifier<List<int>> _selectedAns = ListNotifier<List<int>>([]);
   final ValueNotifier<int> _submittedQuestions = ValueNotifier(0);
-  final AnswerSubmissionHandler _answerSubmissionHandler =
-      AnswerSubmissionHandler();
+  final AnswerSubmissionHandler _answerSubmissionHandler = AnswerSubmissionHandler();
   final ChampionshipScoreEngine _scoreEngine = ChampionshipScoreEngine();
 
   //For Analytics
@@ -86,21 +84,21 @@ class _QuestionViewState extends State<QuestionView> {
           _timer.value--;
         } else {
           _quizTimer?.cancel();
-          if(_submittedQuestions.value != 0){
-          _answerSubmissionHandler.submitChampionShip(
-              context: context,
-              gameMode: widget.gameMode,
-              totalNegative: totalNegativeMarks,
-              champId: widget.champId,
-              totalBonus: totalBonus,
-              totalPenalty: totalPenalty,
-              totalScore: _champScore,
-              timeTaken: quizSubmissionTime(widget.seconds),
-              expectedTime: quizSubmissionTime(widget.seconds),
-              userId: userData.get("personalInfo")['user_id'],
-              totalQuestion: widget.questionsList.length,
-              correctQuestion: correctAnswers);
-        } else {
+          if (_submittedQuestions.value != 0) {
+            _answerSubmissionHandler.submitChampionShip(
+                context: context,
+                gameMode: widget.gameMode,
+                totalNegative: totalNegativeMarks,
+                champId: widget.champId,
+                totalBonus: totalBonus,
+                totalPenalty: totalPenalty,
+                totalScore: _champScore,
+                timeTaken: quizSubmissionTime(widget.seconds),
+                expectedTime: quizSubmissionTime(widget.seconds),
+                userId: userData.get("personalInfo")['user_id'],
+                totalQuestion: widget.questionsList.length,
+                correctQuestion: correctAnswers);
+          } else {
             context.go("/landingPage");
           }
         }
@@ -124,14 +122,15 @@ class _QuestionViewState extends State<QuestionView> {
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         if (!didPop) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-              content: Text(
-                  "You can press the 'X' icon on the top right of the screen to exit.")));
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("You can press the 'X' icon on the top right of the screen to exit.")));
         }
       },
       child: Scaffold(
           appBar: AppBar(
-            title: Text(widget.champName),
+            title: Text(
+              widget.champName,
+              style: TextStyle(fontSize: 16.sp),
+            ),
             actions: [
               if (kDebugMode)
                 IconButton(
@@ -148,10 +147,13 @@ class _QuestionViewState extends State<QuestionView> {
                       debugPrint(widget.seconds.toString());
                     },
                     icon: const Icon(Icons.terminal)),
-              if(kDebugMode)IconButton(onPressed: () {
-                _questionTimer.stop();
-                _quizTimer?.cancel();
-              }, icon: const Icon(Icons.pause)),
+              if (kDebugMode)
+                IconButton(
+                    onPressed: () {
+                      _questionTimer.stop();
+                      _quizTimer?.cancel();
+                    },
+                    icon: const Icon(Icons.pause)),
               IconButton(
                   onPressed: () {
                     showDialog(
@@ -159,37 +161,23 @@ class _QuestionViewState extends State<QuestionView> {
                       builder: (context) {
                         return AlertDialog(
                           content: RichText(
-                            text: TextSpan(
-                                text:
-                                    "Are you sure you want to exit the quiz?\n",
-                                style: TextStyle(fontSize: 24.sp,color: Theme.of(context).colorScheme.inverseSurface),
-                                children: [
-                                  TextSpan(
-                                      text: "Your progress will not be saved.",
-                                      style: TextStyle(fontSize: 16.sp,color: Theme.of(context).colorScheme.inverseSurface.withOpacity(0.5)))
-                                ]),
+                            text: TextSpan(text: "Are you sure you want to exit the quiz?\n", style: TextStyle(fontSize: 24.sp, color: Theme.of(context).colorScheme.inverseSurface), children: [
+                              TextSpan(text: "Your progress will not be saved.", style: TextStyle(fontSize: 16.sp, color: Theme.of(context).colorScheme.inverseSurface.withOpacity(0.5)))
+                            ]),
                             textAlign: TextAlign.center,
                           ),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                           title: Icon(
                             Icons.warning_amber_rounded,
                             color: Theme.of(context).colorScheme.error,
-                            size: Theme.of(context)
-                                    .textTheme
-                                    .displayMedium!
-                                    .fontSize! *
-                                2,
+                            size: Theme.of(context).textTheme.displayMedium!.fontSize! * 2,
                           ),
                           actions: [
                             Row(
                               children: [
                                 Expanded(
                                   child: FilledButton(
-                                      style: FilledButton.styleFrom(
-                                          backgroundColor: Theme.of(context)
-                                              .colorScheme
-                                              .error),
+                                      style: FilledButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.error),
                                       onPressed: () {
                                         context.go("/landingPage");
                                       },
@@ -208,10 +196,7 @@ class _QuestionViewState extends State<QuestionView> {
                                       },
                                       child: Text(
                                         "No",
-                                        style: TextStyle(
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .inverseSurface),
+                                        style: TextStyle(color: Theme.of(context).colorScheme.inverseSurface),
                                       )),
                                 )
                               ],
@@ -236,11 +221,9 @@ class _QuestionViewState extends State<QuestionView> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     FutureBuilder(
-                      future: BannerAdRepository()
-                          .getChampionshipBannerAds(widget.champId),
+                      future: BannerAdRepository().getChampionshipBannerAds(widget.champId),
                       builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
                           return const Skeletonizer(
                             enabled: true,
                             child: SizedBox(),
@@ -250,13 +233,13 @@ class _QuestionViewState extends State<QuestionView> {
                           return CarouselSlider.builder(
                               itemCount: snapshot.data!.length,
                               itemBuilder: (context, index, realIndex) {
-                                return Image.network(snapshot.data!
-                                    .elementAt(index)['ad_image']);
+                                return Image.network(snapshot.data!.elementAt(index)['ad_image']);
                               },
                               options: CarouselOptions(
-                                  autoPlay: true,
-                                  height: kToolbarHeight,
-                                  viewportFraction: 1.0));
+                                autoPlay: true,
+                                height: kToolbarHeight,
+                                viewportFraction: 1.0,
+                              ));
                         }
                         return const SizedBox(
                           child: Text("Ad"),
@@ -267,11 +250,7 @@ class _QuestionViewState extends State<QuestionView> {
                       height: 16,
                     ),
                     DefaultTextStyle(
-                      style: TextStyle(
-                          fontSize:
-                              Theme.of(context).textTheme.titleMedium?.fontSize,
-                          color: Theme.of(context).colorScheme.inverseSurface,
-                          fontWeight: FontWeight.w500),
+                      style: TextStyle(fontSize: Theme.of(context).textTheme.titleMedium?.fontSize, color: Theme.of(context).colorScheme.inverseSurface, fontWeight: FontWeight.w500),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
@@ -285,9 +264,7 @@ class _QuestionViewState extends State<QuestionView> {
                                 ),
                                 ValueListenableBuilder(
                                   valueListenable: _timer,
-                                  builder: (context, value, child) =>
-                                      AutoSizeText(timerFormatted(
-                                          timeInSecond: _timer.value)),
+                                  builder: (context, value, child) => AutoSizeText(timerFormatted(timeInSecond: _timer.value)),
                                 ),
                               ],
                             ),
@@ -300,8 +277,7 @@ class _QuestionViewState extends State<QuestionView> {
                                 const VerticalDivider(
                                   width: 8,
                                 ),
-                                AutoSizeText(
-                                    "${index + 1}/${widget.questionsList.length}"),
+                                AutoSizeText("${index + 1}/${widget.questionsList.length}"),
                               ],
                             ),
                           ),
@@ -311,16 +287,13 @@ class _QuestionViewState extends State<QuestionView> {
                               children: [
                                 Container(
                                   alignment: Alignment.center,
-                                  decoration: const BoxDecoration(
-                                    color: Colors.orange,
-                                    shape: BoxShape.circle
-                                  ),
+                                  decoration: const BoxDecoration(color: Colors.orange, shape: BoxShape.circle),
                                   height: 22.r,
                                   width: 22.r,
-                                  child: const AutoSizeText("k",style: TextStyle(
-                                    fontWeight: FontWeight.w900,
-                                    color: Colors.white
-                                  ),),
+                                  child: const AutoSizeText(
+                                    "k",
+                                    style: TextStyle(fontWeight: FontWeight.w900, color: Colors.white),
+                                  ),
                                 ),
                                 const VerticalDivider(
                                   width: 8,
@@ -341,15 +314,13 @@ class _QuestionViewState extends State<QuestionView> {
                         shrinkWrap: true,
                         children: [
                           QuestionTile(
-                            questionImg: widget.questionsList
-                                .elementAt(index)
-                                .questionImage,
+                            questionImg: widget.questionsList.elementAt(index).questionImage,
                             questionNo: "${index + 1}",
-                            questionText: widget.questionsList
-                                .elementAt(index)
-                                .questionText,
+                            questionText: widget.questionsList.elementAt(index).questionText,
                           ),
-                          const Divider(color: Colors.transparent,),
+                          const Divider(
+                            color: Colors.transparent,
+                          ),
                           AutoSizeText(
                             "Options : ",
                             style: Theme.of(context).textTheme.titleMedium,
@@ -357,11 +328,7 @@ class _QuestionViewState extends State<QuestionView> {
                           const SizedBox(
                             height: 4,
                           ),
-                          if (widget.questionsList
-                                  .elementAt(index)
-                                  .correctAnswer!
-                                  .length >
-                              1)
+                          if (widget.questionsList.elementAt(index).correctAnswer!.length > 1)
                             const AutoSizeText(
                               "Note : Select all correct options.",
                               style: TextStyle(fontWeight: FontWeight.bold),
@@ -370,47 +337,28 @@ class _QuestionViewState extends State<QuestionView> {
                             color: Colors.transparent,
                           ),
                           OptionTile(
-                            optionImg: widget.questionsList
-                                .elementAt(index)
-                                .option1Img,
+                            optionImg: widget.questionsList.elementAt(index).option1Img,
                             optionNo: "A) ",
-                            optionText: widget.questionsList
-                                .elementAt(index)
-                                .option1Text,
+                            optionText: widget.questionsList.elementAt(index).option1Text,
                           ),
                           OptionTile(
-                            optionImg: widget.questionsList
-                                .elementAt(index)
-                                .option2Img,
+                            optionImg: widget.questionsList.elementAt(index).option2Img,
                             optionNo: "B) ",
-                            optionText: widget.questionsList
-                                .elementAt(index)
-                                .option2Text,
+                            optionText: widget.questionsList.elementAt(index).option2Text,
                           ),
                           OptionTile(
-                            optionImg: widget.questionsList
-                                .elementAt(index)
-                                .option3Img,
+                            optionImg: widget.questionsList.elementAt(index).option3Img,
                             optionNo: "C) ",
-                            optionText: widget.questionsList
-                                .elementAt(index)
-                                .option3Text,
+                            optionText: widget.questionsList.elementAt(index).option3Text,
                           ),
                           OptionTile(
-                            optionImg: widget.questionsList
-                                .elementAt(index)
-                                .option4Img,
+                            optionImg: widget.questionsList.elementAt(index).option4Img,
                             optionNo: "D) ",
-                            optionText: widget.questionsList
-                                .elementAt(index)
-                                .option4Text,
+                            optionText: widget.questionsList.elementAt(index).option4Text,
                           ),
                           AutoSizeText(
                             "E) Report question as wrong",
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyLarge!
-                                .copyWith(fontWeight: FontWeight.bold),
+                            style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600),
                           ),
                           const SizedBox(
                             height: kToolbarHeight,
@@ -424,17 +372,11 @@ class _QuestionViewState extends State<QuestionView> {
                         return GridView.builder(
                           itemCount: _options.length,
                           shrinkWrap: true,
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 5, crossAxisSpacing: 12),
+                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 5, crossAxisSpacing: 12),
                           itemBuilder: (context, buttonIndex) {
                             return InkWell(
                               onTap: () {
-                                if (widget.questionsList
-                                        .elementAt(index)
-                                        .correctAnswer!
-                                        .length >
-                                    1) {
+                                if (widget.questionsList.elementAt(index).correctAnswer!.length > 1) {
                                   if (value.contains(buttonIndex)) {
                                     _selectedAns.value.remove(buttonIndex);
                                   } else if (buttonIndex == 4) {
@@ -465,43 +407,21 @@ class _QuestionViewState extends State<QuestionView> {
                               child: DecoratedBox(
                                 decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(5),
-                                    border: Border.fromBorderSide(BorderSide(
-                                        color:
-                                            _options.elementAt(buttonIndex) ==
-                                                    "E"
-                                                ? Theme.of(context)
-                                                    .colorScheme
-                                                    .error
-                                                : Theme.of(context)
-                                                    .colorScheme
-                                                    .secondary,
-                                        width: 2)),
-                                    color:
-                                        _options.elementAt(buttonIndex) == "E"
-                                            ? value.contains(buttonIndex)
-                                                ? Theme.of(context)
-                                                    .colorScheme
-                                                    .error
-                                                : Theme.of(context)
-                                                    .colorScheme
-                                                    .surface
-                                            : value.contains(buttonIndex)
-                                                ? Theme.of(context)
-                                                    .colorScheme
-                                                    .secondary
-                                                : Theme.of(context)
-                                                    .colorScheme
-                                                    .surface),
+                                    border: Border.fromBorderSide(
+                                        BorderSide(color: _options.elementAt(buttonIndex) == "E" ? Theme.of(context).colorScheme.error : Theme.of(context).colorScheme.secondary, width: 2)),
+                                    color: _options.elementAt(buttonIndex) == "E"
+                                        ? value.contains(buttonIndex)
+                                            ? Theme.of(context).colorScheme.error
+                                            : Theme.of(context).colorScheme.surface
+                                        : value.contains(buttonIndex)
+                                            ? Theme.of(context).colorScheme.secondary
+                                            : Theme.of(context).colorScheme.surface),
                                 child: Padding(
                                   padding: const EdgeInsets.all(16.0),
                                   child: Center(
                                     child: Text(
                                       _options.elementAt(buttonIndex),
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleLarge!
-                                          .copyWith(
-                                              fontWeight: FontWeight.bold),
+                                      style: Theme.of(context).textTheme.titleLarge!.copyWith(fontWeight: FontWeight.bold),
                                     ),
                                   ),
                                 ),
@@ -523,14 +443,9 @@ class _QuestionViewState extends State<QuestionView> {
                         }
                         return FilledButton(
                             onPressed: () {
-                              if (_selectedAns.value.isEmpty &&
-                                  (_submittedQuestions.value !=
-                                      widget.questionsList.length)) {
-                                snackBarKey.currentState?.showSnackBar(
-                                    const SnackBar(
-                                        content: Text("No answer selected")));
-                              } else if (_submittedQuestions.value ==
-                                  widget.questionsList.length) {
+                              if (_selectedAns.value.isEmpty && (_submittedQuestions.value != widget.questionsList.length)) {
+                                snackBarKey.currentState?.showSnackBar(const SnackBar(content: Text("No answer selected")));
+                              } else if (_submittedQuestions.value == widget.questionsList.length) {
                                 _answerSubmissionHandler.onChampSubmit(
                                     context: context,
                                     gameMode: widget.gameMode,
@@ -546,78 +461,73 @@ class _QuestionViewState extends State<QuestionView> {
                                     correctQuestion: correctAnswers);
                               } else {
                                 if (_selectedAns.value.contains(4)) {
-                                  context.read<QuestionViewCubit>().reportWrongQuestion(context, _pageController, int.parse(widget.questionsList.elementAt(index).questionId!), widget.champId, int.parse(widget.questionsList.elementAt(index).teacherId!), _answerSubmissionHandler.questionsMarkedWrong);
-                                } else if (_scoreEngine
-                                        .scoreMultiplierCalculator(widget.questionsList.elementAt(index).correctAnswer!,
-                                            _selectedAns.value.map( (e) => e + 1,).toList()) ==1) {
-                                  _champScore += _scoreEngine.calculateScoreForCorrectAnswer(stringToSeconds(widget.questionsList.elementAt(index).expectedTime!),
-                                          _questionTimer.elapsed.inSeconds,
-                                          int.parse(widget.questionsList.elementAt(index).totalCoins!).toDouble(),
-                                          true,
-                                          -int.parse(widget.questionsList.elementAt(index).totalCoins!));
+                                  context.read<QuestionViewCubit>().reportWrongQuestion(context, _pageController, int.parse(widget.questionsList.elementAt(index).questionId!), widget.champId,
+                                      int.parse(widget.questionsList.elementAt(index).teacherId!), _answerSubmissionHandler.questionsMarkedWrong);
+                                } else if (_scoreEngine.scoreMultiplierCalculator(
+                                        widget.questionsList.elementAt(index).correctAnswer!,
+                                        _selectedAns.value
+                                            .map(
+                                              (e) => e + 1,
+                                            )
+                                            .toList()) ==
+                                    1) {
+                                  _champScore += _scoreEngine.calculateScoreForCorrectAnswer(stringToSeconds(widget.questionsList.elementAt(index).expectedTime!), _questionTimer.elapsed.inSeconds,
+                                      int.parse(widget.questionsList.elementAt(index).totalCoins!).toDouble(), true, -int.parse(widget.questionsList.elementAt(index).totalCoins!));
                                   correctAnswers += 1;
-                                  final currData =
-                                      widget.questionsList.elementAt(index);
-                                  _answerSubmissionHandler.sendQuestionData(
-                                      context,
-                                      questionId:int.parse(currData.questionId!),
-                                      timeTaken:_questionTimer.elapsed.inSeconds,
+                                  final currData = widget.questionsList.elementAt(index);
+                                  _answerSubmissionHandler.sendQuestionData(context,
+                                      questionId: int.parse(currData.questionId!),
+                                      timeTaken: _questionTimer.elapsed.inSeconds,
                                       expectedTime: stringToSeconds(currData.expectedTime!),
                                       perQuestionCoins: _scoreEngine.calculateScoreForCorrectAnswer(
                                         stringToSeconds(currData.expectedTime!),
-                                              _questionTimer.elapsed.inSeconds,
-                                              int.parse(currData.totalCoins!).toDouble(),
-                                              true,
-                                              -int.parse(currData.totalCoins!),
+                                        _questionTimer.elapsed.inSeconds,
+                                        int.parse(currData.totalCoins!).toDouble(),
+                                        true,
+                                        -int.parse(currData.totalCoins!),
                                       ),
                                       correctAns: currData.correctAnswer!,
-                                      submittedAns: _selectedAns.value.map((e) => e + 1,).toList().join(","),
+                                      submittedAns: _selectedAns.value
+                                          .map(
+                                            (e) => e + 1,
+                                          )
+                                          .toList()
+                                          .join(","),
                                       champId: widget.champId);
                                   totalBonus += _questionTimer.elapsed.inSeconds / stringToSeconds(currData.expectedTime!);
                                   debugPrint("Correct");
                                 } else {
                                   totalNegativeMarks += 1;
-                                  _champScore += _scoreEngine.calculateScoreForCorrectAnswer(
-                                      stringToSeconds(widget.questionsList.elementAt(index).expectedTime!),
-                                          _questionTimer.elapsed.inSeconds,
-                                          int.parse(widget.questionsList.elementAt(index).totalCoins!).toDouble(),
-                                          false,
-                                          -int.parse(widget.questionsList.elementAt(index).totalCoins!));
+                                  _champScore += _scoreEngine.calculateScoreForCorrectAnswer(stringToSeconds(widget.questionsList.elementAt(index).expectedTime!), _questionTimer.elapsed.inSeconds,
+                                      int.parse(widget.questionsList.elementAt(index).totalCoins!).toDouble(), false, -int.parse(widget.questionsList.elementAt(index).totalCoins!));
                                   final currData = widget.questionsList.elementAt(index);
-                                  _answerSubmissionHandler.sendQuestionData( context,
+                                  _answerSubmissionHandler.sendQuestionData(context,
                                       questionId: int.parse(currData.questionId!),
                                       timeTaken: _questionTimer.elapsed.inSeconds,
-                                      expectedTime:stringToSeconds(currData.expectedTime!),
-                                      perQuestionCoins: _scoreEngine.calculateScoreForCorrectAnswer(
-                                          stringToSeconds(currData.expectedTime!),
-                                          _questionTimer.elapsed.inSeconds,
-                                          int.parse(currData.totalCoins!).toDouble(),
-                                              false,
-                                              -int.parse(currData.totalCoins!)),
+                                      expectedTime: stringToSeconds(currData.expectedTime!),
+                                      perQuestionCoins: _scoreEngine.calculateScoreForCorrectAnswer(stringToSeconds(currData.expectedTime!), _questionTimer.elapsed.inSeconds,
+                                          int.parse(currData.totalCoins!).toDouble(), false, -int.parse(currData.totalCoins!)),
                                       correctAns: currData.correctAnswer!,
-                                      submittedAns: _selectedAns.value.map((e) => e + 1,).toList().join(","),
+                                      submittedAns: _selectedAns.value
+                                          .map(
+                                            (e) => e + 1,
+                                          )
+                                          .toList()
+                                          .join(","),
                                       champId: widget.champId);
                                   totalPenalty += _scoreEngine.calculateScoreForCorrectAnswer(
-                                          stringToSeconds(currData.expectedTime!),
-                                          _questionTimer.elapsed.inSeconds,
-                                          int.parse(currData.totalCoins!).toDouble(),
-                                          false,
-                                          -int.parse(currData.totalCoins!));
+                                      stringToSeconds(currData.expectedTime!), _questionTimer.elapsed.inSeconds, int.parse(currData.totalCoins!).toDouble(), false, -int.parse(currData.totalCoins!));
                                   debugPrint("Wrong");
                                 }
                               }
                             },
-                            child: Text(
-                                (index + 1) == widget.questionsList.length
-                                    ? "Submit"
-                                    : "Next Question"));
+                            child: Text((index + 1) == widget.questionsList.length ? "Submit" : "Next Question"));
                       },
                       listener: (context, state) {
                         if (state is QuestionViewAnsweredState) {
                           _submittedQuestions.value += 1;
                           _questionTimer.reset();
-                          if (_submittedQuestions.value ==
-                              widget.questionsList.length) {
+                          if (_submittedQuestions.value == widget.questionsList.length) {
                             _answerSubmissionHandler.onChampSubmit(
                                 context: context,
                                 gameMode: widget.gameMode,
@@ -627,38 +537,34 @@ class _QuestionViewState extends State<QuestionView> {
                                 totalPenalty: totalPenalty,
                                 totalScore: _champScore,
                                 timeTaken: quizSubmissionTime(_quizTimer!.tick),
-                                expectedTime:quizSubmissionTime(widget.expectedTime * 60),
+                                expectedTime: quizSubmissionTime(widget.expectedTime * 60),
                                 userId: userData.get("personalInfo")['user_id'],
                                 totalQuestion: widget.questionsList.length,
                                 correctQuestion: correctAnswers);
                           }
                           _selectedAns.value = [];
-                          _pageController.nextPage(
-                              duration: const Duration(milliseconds: 100),
-                              curve: Curves.easeInOut);
+                          _pageController.nextPage(duration: const Duration(milliseconds: 100), curve: Curves.easeInOut);
                         }
                         if (state is QuestionViewErrorState) {
-                          snackBarKey.currentState?.showSnackBar(const SnackBar(
-                              content: Text("Something went wrong")));
+                          snackBarKey.currentState?.showSnackBar(const SnackBar(content: Text("Something went wrong")));
                         }
                         if (state is ResultSubmittedState) {
                           mixpanel!.track("ChampionshipPlayed", properties: {
-                            "UserId" : userData.get("personalInfo")['user_id'],
+                            "UserId": userData.get("personalInfo")['user_id'],
                             "ChampionshipId": widget.champId,
                             "GameModeId": widget.modeId,
                             "CategoryId": widget.categoryId,
                             "TeacherId": widget.teacherId,
                             "PlayedOn": DateTime.now().toString(),
-                            "ChampionshipDuration" : widget.expectedTime,
+                            "ChampionshipDuration": widget.expectedTime,
                           });
                           context.go("/quizResult", extra: {
                             "score": _champScore,
                             "total_questions": widget.questionsList.length,
                             "solved_questions": correctAnswers,
-                            "wrong_questions":
-                                _answerSubmissionHandler.questionsMarkedWrong,
+                            "wrong_questions": _answerSubmissionHandler.questionsMarkedWrong,
                             "champId": widget.champId,
-                            "modeId" : widget.modeId
+                            "modeId": widget.modeId
                           });
                         }
                       },
@@ -713,18 +619,7 @@ class AnswerSubmissionHandler {
       required String userId,
       required int totalQuestion,
       required int correctQuestion}) {
-    context.read<QuestionViewCubit>().submitChampionshipResult(
-        gameMode,
-        totalNegative,
-        champId,
-        totalBonus,
-        totalPenalty,
-        totalScore,
-        timeTaken,
-        expectedTime,
-        userId,
-        totalQuestion,
-        correctQuestion);
+    context.read<QuestionViewCubit>().submitChampionshipResult(gameMode, totalNegative, champId, totalBonus, totalPenalty, totalScore, timeTaken, expectedTime, userId, totalQuestion, correctQuestion);
   }
 
   void onChampSubmit(
@@ -742,20 +637,7 @@ class AnswerSubmissionHandler {
       required int correctQuestion}) {
     // Future.delayed(const Duration(seconds: 2));
     // NoScreenshot.instance.screenshotOn();
-    context
-        .read<QuestionViewCubit>()
-        .submitChampionshipResult(
-        gameMode,
-        totalNegative,
-        champId,
-        totalBonus,
-        totalPenalty,
-        totalScore,
-        timeTaken,
-        expectedTime,
-        userId,
-        totalQuestion,
-        correctQuestion);
+    context.read<QuestionViewCubit>().submitChampionshipResult(gameMode, totalNegative, champId, totalBonus, totalPenalty, totalScore, timeTaken, expectedTime, userId, totalQuestion, correctQuestion);
     // showDialog(
     //   context: context,
     //   builder: (context) {
@@ -810,22 +692,17 @@ class AnswerSubmissionHandler {
     // );
   }
 
-  void onSubmittedQuestionWrong(
-      BuildContext context, PageController pageController) {
+  void onSubmittedQuestionWrong(BuildContext context, PageController pageController) {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           content: Text(
             "Is this question wrong?",
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.inverseSurface,
-              fontSize: 20.sp
-            ),
+            style: TextStyle(color: Theme.of(context).colorScheme.inverseSurface, fontSize: 20.sp),
             textAlign: TextAlign.center,
           ),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           title: Icon(
             Icons.warning_amber_rounded,
             color: Theme.of(context).colorScheme.error,
@@ -836,8 +713,7 @@ class AnswerSubmissionHandler {
               children: [
                 Expanded(
                   child: FilledButton(
-                      style: FilledButton.styleFrom(
-                          backgroundColor: Theme.of(context).colorScheme.error),
+                      style: FilledButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.error),
                       onPressed: () {
                         questionsMarkedWrong += 1;
                         Navigator.pop(context);
@@ -857,9 +733,7 @@ class AnswerSubmissionHandler {
                       },
                       child: Text(
                         "No",
-                        style: TextStyle(
-                            color:
-                                Theme.of(context).colorScheme.inverseSurface),
+                        style: TextStyle(color: Theme.of(context).colorScheme.inverseSurface),
                       )),
                 )
               ],
@@ -871,20 +745,7 @@ class AnswerSubmissionHandler {
   }
 
   void sendQuestionData(BuildContext context,
-      {required int questionId,
-      required int timeTaken,
-      required int expectedTime,
-      required double perQuestionCoins,
-      required String correctAns,
-      required int champId,
-      required String submittedAns}) {
-    context.read<QuestionViewCubit>().submitQuestion(
-        questionId,
-        quizSubmissionTime(timeTaken),
-        quizSubmissionTime(expectedTime),
-        perQuestionCoins,
-        correctAns,
-        submittedAns,
-        champId);
+      {required int questionId, required int timeTaken, required int expectedTime, required double perQuestionCoins, required String correctAns, required int champId, required String submittedAns}) {
+    context.read<QuestionViewCubit>().submitQuestion(questionId, quizSubmissionTime(timeTaken), quizSubmissionTime(expectedTime), perQuestionCoins, correctAns, submittedAns, champId);
   }
 }

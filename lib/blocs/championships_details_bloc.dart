@@ -2,7 +2,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kGamify/models/championship_details_model.dart';
 import 'package:kGamify/repositories/championship_repository.dart';
 
-
 abstract class ChampionshipsStates {}
 
 class CategoriesLoadingState extends ChampionshipsStates {}
@@ -28,9 +27,9 @@ class ChampionshipsBloc extends Cubit<ChampionshipsStates> {
   void getCategories() async {
     try {
       models = await _categoriesRepository.fetchCategory();
-      if(models.isEmpty){
+      if (models.isEmpty) {
         emit(CategoriesErrorState("No championships found"));
-      }else {
+      } else {
         sortChampionships("Date");
       }
     } catch (e) {
@@ -62,9 +61,12 @@ class ChampionshipsBloc extends Cubit<ChampionshipsStates> {
     emit(CategoriesLoadedState(models
         .where(
           (element) =>
-      element.champName!.toLowerCase().contains(query) ||
-          element.categoryName!.toLowerCase().contains(query) || element.championshipDetails!.any((details) => details.uniqueId?.contains(query) ?? false,),
-    )
+              element.champName!.toLowerCase().contains(query) ||
+              element.categoryName!.toLowerCase().contains(query) ||
+              element.championshipDetails!.any(
+                (details) => details.uniqueId?.contains(query) ?? false,
+              ),
+        )
         .toList()));
   }
 
@@ -72,14 +74,10 @@ class ChampionshipsBloc extends Cubit<ChampionshipsStates> {
     emit(CategoriesLoadedState(filterChampionshipsByModeName(models, filters)));
   }
 
-  List<ChampionshipsModel> filterChampionshipsByModeName(
-      List<ChampionshipsModel> championships, List<String> selectedModeNames) {
+  List<ChampionshipsModel> filterChampionshipsByModeName(List<ChampionshipsModel> championships, List<String> selectedModeNames) {
     if (selectedModeNames.isNotEmpty) {
       return championships
-          .where((championship) => selectedModeNames.any((modeName) =>
-      championship.championshipDetails
-          ?.any((details) => details.modeName?.toLowerCase() == modeName.toLowerCase()) ??
-          false))
+          .where((championship) => selectedModeNames.any((modeName) => championship.championshipDetails?.any((details) => details.modeName?.toLowerCase() == modeName.toLowerCase()) ?? false))
           .toList();
     } else {
       return models;
@@ -91,8 +89,8 @@ class ChampionshipsBloc extends Cubit<ChampionshipsStates> {
       case "A-Z":
         {
           models.sort(
-                (a, b) {
-              return a.categoryName!.compareTo(b.categoryName!);
+            (a, b) {
+              return a.champName!.compareTo(b.champName!);
             },
           );
           emit(CategoriesLoadedState(models));
@@ -100,9 +98,8 @@ class ChampionshipsBloc extends Cubit<ChampionshipsStates> {
       case "Date":
         {
           models.sort(
-                (a, b) {
-              return DateTime.parse("${a.startDate} ${a.startTime}")
-                  .compareTo(DateTime.parse("${b.startDate} ${b.startTime}"));
+            (a, b) {
+              return DateTime.parse("${a.startDate} ${a.startTime}").compareTo(DateTime.parse("${b.startDate} ${b.startTime}"));
             },
           );
           emit(CategoriesLoadedState(models));
@@ -110,7 +107,7 @@ class ChampionshipsBloc extends Cubit<ChampionshipsStates> {
       case "Status":
         {
           models.sort(
-                (a, b) {
+            (a, b) {
               final aFormattedStartDate = DateTime.parse("${a.startDate} ${a.startTime}");
               final bFormattedStartDate = DateTime.parse("${b.startDate} ${b.startTime}");
               return aFormattedStartDate.compareTo(bFormattedStartDate);

@@ -1,3 +1,4 @@
+import 'package:dice_bear/dice_bear.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -7,7 +8,6 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:kGamify/blocs/user_image_bloc.dart';
 import 'package:kGamify/generated/l10n.dart';
 import 'package:kGamify/models/questions_models.dart';
-import 'package:kGamify/on_boarding/auth_screen.dart';
 import 'package:kGamify/utils/constants.dart';
 
 class AppDrawer extends StatelessWidget {
@@ -15,28 +15,28 @@ class AppDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Avatar _avatar = DiceBearBuilder(seed: "Nupur", sprite: DiceBearSprite.avataaarsNeutral).build();
     return Drawer(
       child: Column(
         children: [
           UserAccountsDrawerHeader(
-              currentAccountPicture: Hero(
-                tag: "UserPfp",
-                child: BlocBuilder<UserDataBloc, UserImageStates>(
-                  builder: (context, state) {
-                    if (state is UserImageSet) {
-                      return CircleAvatar(
-                        backgroundImage: MemoryImage(state.image),
-                      );
-                    }
-                    return const CircleAvatar();
-                  },
-                ),
+            currentAccountPicture: Hero(
+              tag: "UserPfp",
+              child: BlocBuilder<UserDataBloc, UserImageStates>(
+                builder: (context, state) {
+                  if (state is UserImageSet) {
+                    return CircleAvatar(
+                      backgroundImage: MemoryImage(state.image),
+                    );
+                  }
+                  // return CircleAvatar(child: ClipRRect(borderRadius: BorderRadius.circular(100.r), child: _avatar.toImage()));
+                  return const CircleAvatar();
+                },
               ),
-              // accountName: const Text("Suyog"), accountEmail: const Text("suyog.22220300@viit.ac.in"),
-              accountName:
-                  Text(Hive.box(userDataDB).get("personalInfo")["name"] ?? ""),
-              accountEmail:
-                  Text(Hive.box(userDataDB).get("personalInfo")["email"]),
+            ),
+            // accountName: const Text("Suyog"), accountEmail: const Text("suyog.22220300@viit.ac.in"),
+            accountName: Text(Hive.box(userDataDB).get("personalInfo")["name"] ?? ""),
+            accountEmail: Text(Hive.box(userDataDB).get("personalInfo")["email"]),
           ),
           ListTile(
             leading: const Icon(CupertinoIcons.person),
@@ -73,22 +73,17 @@ class AppDrawer extends StatelessWidget {
                       questionId: "1",
                       totalCoins: "20",
                       expectedTime: "10",
-                      questionImage:
-                          "<a>https://www.youtube.com/watch?v=pWr3kgmx-nE</a>",
+                      questionImage: "<a>https://www.youtube.com/watch?v=pWr3kgmx-nE</a>",
                       // questionImage: "https://files.porsche.com/filestore/image/multimedia/none/992-gt3-rs-modelimage-sideshot/model/cfbb8ed3-1a15-11ed-80f5-005056bbdc38/porsche-model.png",
-                      option1Img:
-                          "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTS0s56W7ZTO7tSKBMCPO1Eri6nhoQf8nwY7Q&s",
-                      option2Img:
-                          "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTS0s56W7ZTO7tSKBMCPO1Eri6nhoQf8nwY7Q&s",
-                      option3Img:
-                          "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTS0s56W7ZTO7tSKBMCPO1Eri6nhoQf8nwY7Q&s",
-                      option4Img:
-                          "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTS0s56W7ZTO7tSKBMCPO1Eri6nhoQf8nwY7Q&s",
+                      option1Img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTS0s56W7ZTO7tSKBMCPO1Eri6nhoQf8nwY7Q&s",
+                      option2Img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTS0s56W7ZTO7tSKBMCPO1Eri6nhoQf8nwY7Q&s",
+                      option3Img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTS0s56W7ZTO7tSKBMCPO1Eri6nhoQf8nwY7Q&s",
+                      option4Img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTS0s56W7ZTO7tSKBMCPO1Eri6nhoQf8nwY7Q&s",
                     ),
                   ],
                   "seconds": 900,
                   "teacher_name": "Suyog",
-                  "modeId" : 43
+                  "modeId": 43
                 });
               },
             ),
@@ -97,13 +92,7 @@ class AppDrawer extends StatelessWidget {
               leading: const Icon(Icons.analytics_outlined),
               title: const Text("quizResult"),
               onTap: () {
-                context.go("/quizResult", extra: {
-                  "score": 10.33,
-                  "total_questions": 10,
-                  "solved_questions": 7,
-                  "wrong_questions": 3,
-                  "champId": 23
-                });
+                context.go("/quizResult", extra: {"score": 10.33, "total_questions": 10, "solved_questions": 7, "wrong_questions": 3, "champId": 23});
               },
             ),
           ListTile(
@@ -118,34 +107,37 @@ class AppDrawer extends StatelessWidget {
             trailing: const Icon(Icons.logout),
             title: Text(S.current.logOut),
             onTap: () async {
+              mixpanel!.track('UserLogOut', properties: {"user_id": Hive.box(userDataDB).get("personalInfo")['user_id'], "timeStamp": DateTime.now().toString()});
+              mixpanel!.reset();
               await Hive.box(userDataDB).clear();
               await Hive.box(quizDataDB).clear();
               await Hive.box(qualificationDataDB).clear().whenComplete(
-                    () {
+                () {
                   if (!context.mounted) return;
                   context.go("/");
                 },
               );
             },
           ),
-          if (kDebugMode)
-            ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text("test"),
-              onTap: () {
-                mixpanel!.track('UserLogOut',properties: {
-                  "user_id" : Hive.box(userDataDB).get("personalInfo")['user_id'],
-                  "timeStamp" : DateTime.now().toString()
-                });
-                mixpanel!.reset();
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const AuthScreen(),
-                    ));
-                // context.go("/landingPage/settings");
-              },
-            ),
+          // if (kDebugMode)
+          //   ListTile(
+          //     leading: const Icon(Icons.settings),
+          //     title: const Text("test"),
+          //     onTap: () {
+          //       Navigator.push(
+          //           context,
+          //           MaterialPageRoute(
+          //             builder: (context) => const PhoneVerification(
+          //               phone: "7249379181",
+          //               selectedQualification: "",
+          //               password: "",
+          //               name: "",
+          //               email: "",
+          //             ),
+          //           ));
+          //       // context.go("/landingPage/settings");
+          //     },
+          //   ),
         ],
       ),
     );
