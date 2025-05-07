@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:kGamify/on_boarding/utils/auth_handler.dart';
@@ -100,7 +99,7 @@ class AuthCubit extends Cubit<AuthStates> {
         if (qualifications[0]['board_name'] != null) {
           qualifications.forEach(
             (e) async => await Hive.box(qualificationDataDB).put(e['user_qualification'],
-                {"SchoolName": e['institute_name'], "Board": e['board_name'], "percentage": e['percentage'], "PassingYear": e['passing_year'], "HighestEd": e['is_highest'] == 1 ? true : false} ?? {}),
+                {"SchoolName": e['institute_name'], "Board": e['board_name'], "percentage": e['percentage'], "PassingYear": e['passing_year'], "HighestEd": e['is_highest'] == 1 ? true : false}),
           );
         }
         // print(Hive.box(userDataDB).get("personalInfo"));
@@ -126,7 +125,7 @@ class AuthCubit extends Cubit<AuthStates> {
         });
         emit(AuthSuccessState());
       } else {
-        debugPrint("Something went wrong");
+        // debugPrint("Something went wrong");
       }
     } catch (e) {
       emit(AuthErrorState(e.toString()));

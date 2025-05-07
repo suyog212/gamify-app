@@ -14,9 +14,35 @@ import 'package:kGamify/on_boarding/utils/auth_handler.dart';
 import 'package:kGamify/utils/constants.dart';
 import 'package:kGamify/utils/widgets/widgets.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:validator_regex/validator_regex.dart';
 
 class SignUp extends StatefulWidget {
-  const SignUp({super.key});
+  final TextEditingController name;
+  final TextEditingController email;
+  final TextEditingController phone;
+  final TextEditingController confirmPass;
+  final TextEditingController password;
+  final ValueNotifier agree;
+  final ValueNotifier selected;
+  final ValueNotifier tncerror;
+  final ValueNotifier isPass;
+  final ValueNotifier selectedQualification;
+  final List<String> qualifications;
+  final void Function() signInButton;
+  const SignUp(
+      {super.key,
+      required this.agree,
+      required this.selected,
+      required this.confirmPass,
+      required this.email,
+      required this.isPass,
+      required this.name,
+      required this.password,
+      required this.phone,
+      required this.qualifications,
+      required this.selectedQualification,
+      required this.signInButton,
+      required this.tncerror});
 
   @override
   State<SignUp> createState() => _SignUpState();
@@ -51,6 +77,15 @@ class _SignUpState extends State<SignUp> {
     super.dispose();
   }
 
+  final String passError = '''
+Password should contain
+  should contain at least one upper case
+  should contain at least one lower case
+  should contain at least one digit
+  should contain at least one Special character
+  Must be at least 8 characters in length
+''';
+
   @override
   Widget build(BuildContext context) {
     return Form(
@@ -67,6 +102,9 @@ class _SignUpState extends State<SignUp> {
               if (value == null || value.isEmpty) {
                 return "Name cannot be empty.";
               }
+              if (!Validator.alphanumeric(value.trim(), withSpace: true)) {
+                return "Name cannot contain special characters.";
+              }
               return null;
             },
           ),
@@ -81,12 +119,21 @@ class _SignUpState extends State<SignUp> {
               if (value == null || value.isEmpty) {
                 return "Phone number cannot be empty.";
               }
+              if (!Validator.digits(value)) {
+                return "Enter a valid phone number";
+              }
               return null;
             },
+            maxLength: 10,
+            // prefix: Text("+91"),
+            // prefixText: "+91",
           ),
-          const Divider(
-            color: Colors.transparent,
-          ),
+          Padding(
+              padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16).r,
+              child: Text(
+                "(Your phone number will be verified.)",
+                style: TextStyle(fontSize: 11.r),
+              )),
           // ValueListenableBuilder(
           //   valueListenable: selectedQualification,
           //   builder: (context, value, child) {
@@ -151,6 +198,15 @@ class _SignUpState extends State<SignUp> {
               // }
               return null;
             },
+            onChange: (value) {
+              final lowercased = value.toLowerCase();
+              if (value != lowercased) {
+                widget.email.value = widget.email.value.copyWith(
+                  text: lowercased,
+                  selection: TextSelection.collapsed(offset: lowercased.length),
+                );
+              }
+            },
             // isEnabled: !isEmailVerified.value,
             // suffix: BlocConsumer<EmailVerificationBloc, EmailVerificationStates>(
             //   listener: (context, state) {
@@ -209,13 +265,7 @@ class _SignUpState extends State<SignUp> {
                     return "Password cannot be empty.";
                   }
                   if (!UserValidation().passExp.hasMatch(value)) {
-                    return '''
-            Password should contain
-              should contain at least one upper case
-              should contain at least one lower case
-              should contain at least one digit
-              should contain at least one Special character
-              Must be at least 8 characters in length''';
+                    return passError;
                   }
                   return null;
                 },
@@ -461,13 +511,7 @@ class _SignUpState extends State<SignUp> {
             children: [
               Text(S.current.alreadyHaveAnAccount),
               TextButton(
-                onPressed: () {
-                  _name.clear();
-                  _email.clear();
-                  _password.clear();
-                  _confirmPass.clear();
-                  selected.value = true;
-                },
+                onPressed: widget.signInButton,
                 style: TextButton.styleFrom(padding: EdgeInsets.zero),
                 child: Text(S.current.signIn),
               ),

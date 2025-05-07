@@ -136,10 +136,59 @@ class _UserAuthenticationState extends State<UserAuthentication> {
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Visibility(
-                      key: const ValueKey<Widget>(SignUp()),
+                      key: ValueKey<Widget>(SignUp(
+                        agree: agree,
+                        confirmPass: _confirmPass,
+                        email: _email,
+                        isPass: isPass,
+                        name: _name,
+                        password: _password,
+                        signInButton: () {
+                          _name.clear();
+                          _email.clear();
+                          _password.clear();
+                          _confirmPass.clear();
+                          selected.value = true;
+                        },
+                        phone: _phone,
+                        qualifications: qualifications,
+                        selected: selected,
+                        selectedQualification: selectedQualification,
+                        tncerror: tncError,
+                      )),
                       visible: selected.value,
-                      replacement: const SignUp(),
-                      child: const SignIn(),
+                      replacement: SignUp(
+                        agree: agree,
+                        confirmPass: _confirmPass,
+                        email: _email,
+                        isPass: isPass,
+                        name: _name,
+                        password: _password,
+                        signInButton: () {
+                          _name.clear();
+                          _email.clear();
+                          _password.clear();
+                          _confirmPass.clear();
+                          selected.value = true;
+                        },
+                        phone: _phone,
+                        qualifications: qualifications,
+                        selected: selected,
+                        selectedQualification: selectedQualification,
+                        tncerror: tncError,
+                      ),
+                      child: SignIn(
+                        createAnAccount: () {
+                          setState(() {
+                            _email.clear();
+                            _password.clear();
+                            selected.value = false;
+                          });
+                        },
+                        email: _email,
+                        isPass: isPass,
+                        password: _password,
+                      ),
                     ),
                   ),
                 );

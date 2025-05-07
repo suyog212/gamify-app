@@ -1,4 +1,5 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:email_validator/email_validator.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,17 +11,18 @@ import 'package:kGamify/utils/constants.dart';
 import 'package:kGamify/utils/widgets/widgets.dart';
 
 class SignIn extends StatefulWidget {
-  const SignIn({super.key});
+  final void Function() createAnAccount;
+  final TextEditingController password;
+  final TextEditingController email;
+  final ValueNotifier isPass;
+  // final ValueNotifier
+  const SignIn({super.key, required this.createAnAccount, required this.email, required this.password, required this.isPass});
 
   @override
   State<SignIn> createState() => _SignInState();
 }
 
 class _SignInState extends State<SignIn> {
-  final TextEditingController _email = TextEditingController();
-  final TextEditingController _password = TextEditingController();
-  ValueNotifier isPass = ValueNotifier<bool>(true);
-  ValueNotifier selected = ValueNotifier<bool>(true);
   final signInFormKey = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
@@ -35,38 +37,53 @@ class _SignInState extends State<SignIn> {
           // ),
           AppTextField(
             hintText: S.current.email,
-            controller: _email,
+            controller: widget.email,
             keyBoardType: TextInputType.emailAddress,
             validator: (value) {
               if (value == null || value.isEmpty) {
                 return "Enter valid email";
-              } else if (!UserValidation().emailExp.hasMatch(value)) {
+              } else if (!EmailValidator.validate(value)) {
                 return "Enter valid email ex.example@abc.com";
               }
               return null;
+            },
+            onChange: (value) {
+              final lowercased = value.toLowerCase();
+              if (value != lowercased) {
+                widget.email.value = widget.email.value.copyWith(
+                  text: lowercased,
+                  selection: TextSelection.collapsed(offset: lowercased.length),
+                );
+              }
             },
           ),
           const Divider(
             color: Colors.transparent,
           ),
           ValueListenableBuilder(
-            valueListenable: isPass,
+            valueListenable: widget.isPass,
             builder: (context, value, child) {
               return AppTextField(
                 hintText: S.current.password,
-                controller: _password,
+                controller: widget.password,
                 keyBoardType: TextInputType.visiblePassword,
                 suffix: IconButton(
                   onPressed: () {
-                    isPass.value = !isPass.value;
+                    widget.isPass.value = !widget.isPass.value;
                   },
                   icon: Visibility(
-                    visible: !isPass.value,
+                    visible: !widget.isPass.value,
                     replacement: const Icon(CupertinoIcons.eye_slash),
                     child: const Icon(CupertinoIcons.eye),
                   ),
                 ),
-                isPass: isPass.value,
+                isPass: widget.isPass.value,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return "Password cannot be empty";
+                  }
+                  return null;
+                },
               );
             },
           ),
@@ -142,7 +159,7 @@ class _SignInState extends State<SignIn> {
                     if (result.contains(ConnectivityResult.mobile) || result.contains(ConnectivityResult.wifi)) {
                       if (signInFormKey.currentState!.validate()) {
                         if (!context.mounted) return;
-                        context.read<AuthCubit>().signInUser(_email.text.trim(), _password.text.trim());
+                        context.read<AuthCubit>().signInUser(widget.email.text.trim(), widget.password.text.trim());
                       }
                     } else {
                       if (!context.mounted) return;
@@ -165,13 +182,7 @@ class _SignInState extends State<SignIn> {
                 width: 8,
               ),
               TextButton(
-                onPressed: () {
-                  setState(() {
-                    _email.clear();
-                    _password.clear();
-                    selected.value = false;
-                  });
-                },
+                onPressed: widget.createAnAccount,
                 style: TextButton.styleFrom(padding: EdgeInsets.zero),
                 child: Text(S.current.createAnAccount),
               ),

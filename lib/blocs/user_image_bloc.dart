@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -15,10 +16,10 @@ class UserImageSet extends UserImageStates {
   UserImageSet(this.image);
 }
 
-class UserDataBloc extends Cubit<UserImageStates>{
-  UserDataBloc() : super(UserImageNotSet()){
-    if(Hive.box(userDataDB).get("UserImage",defaultValue: null) != null){
-      emit(UserImageSet(Hive.box(userDataDB).get("UserImage",defaultValue: null)));
+class UserDataBloc extends Cubit<UserImageStates> {
+  UserDataBloc() : super(UserImageNotSet()) {
+    if (Hive.box(userDataDB).get("UserImage", defaultValue: null) != null) {
+      emit(UserImageSet(Hive.box(userDataDB).get("UserImage", defaultValue: null)));
     }
   }
 

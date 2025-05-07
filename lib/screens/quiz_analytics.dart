@@ -18,160 +18,240 @@ class QuizAnalytics extends StatelessWidget {
   final String? giftName;
   final String giftDescription;
   final String endTime;
-  const QuizAnalytics({super.key, required this.analyticsData, required this.champName, required this.startTime, required this.categoryName, required this.champId, this.giftImage, required this.giftType, this.giftName, required this.giftDescription, required this.modeName, required this.endTime});
+  const QuizAnalytics(
+      {super.key,
+      required this.analyticsData,
+      required this.champName,
+      required this.startTime,
+      required this.categoryName,
+      required this.champId,
+      this.giftImage,
+      required this.giftType,
+      this.giftName,
+      required this.giftDescription,
+      required this.modeName,
+      required this.endTime});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: CustomScrollView(
-        shrinkWrap: true,
-        slivers: [
-          const SliverAppBar(
-            floating: true,
-            snap: true,
-            title: AutoSizeText("Leaderboard"),
-          ),
-          SliverToBoxAdapter(
-            child: ListView(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              children: [
-                AutoSizeText(categoryName,style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.secondary,
-                  fontSize: 23.sp
-                ),),
-                AutoSizeText(champName,style: TextStyle(
-                  fontSize: 18.sp
-                ),),
-                AutoSizeText("Started : $startTime",style: Theme.of(context).textTheme.titleMedium,),
-                const Divider(color: Colors.transparent,),
-                AutoSizeText("Leaderboard",style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18.sp
-                ),),
-                const Divider(color: Colors.transparent,),
-                FutureBuilder(
-                  future: API().sendRequests.get("/get_leaderboard.php?champ_id=$champId"),
-                  builder: (context, snapshot) {
-                    if(snapshot.connectionState == ConnectionState.waiting){
-                      return const Center(child: CircularProgressIndicator(),);
-                    }
-                    if(snapshot.hasData && snapshot.data != null){
-                      List data = snapshot.data?.data['data'];
-                      return Container(
-                        decoration: BoxDecoration(
-                            border: Border.fromBorderSide(BorderSide(
-                              color: Theme.of(context).colorScheme.secondary,
-                            )),
-                            borderRadius: BorderRadius.circular(5)
-                        ),
-                        child: Column(
-                          children: [
-                            // const SizedBox(
-                            //   height: 8,
-                            // ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                              child: DefaultTextStyle(
-                                style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                                    fontWeight: FontWeight.bold
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    const SizedBox(
-                                        width: 60,
-                                        child: AutoSizeText("Rank")),
-                                    SizedBox(
-                                        width: MediaQuery.sizeOf(context).width / 4,
-                                        child: const AutoSizeText("Name")),
-                                    SizedBox(
-                                        width: MediaQuery.sizeOf(context).width / 4,
-                                        child: const AutoSizeText("Points")),
-                                    const AutoSizeText("Time")
-                                  ],
-                                ),
+        body: CustomScrollView(
+      shrinkWrap: true,
+      slivers: [
+        const SliverAppBar(
+          floating: true,
+          snap: true,
+          title: AutoSizeText("Leaderboard"),
+        ),
+        SliverToBoxAdapter(
+          child: ListView(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            children: [
+              AutoSizeText(
+                categoryName,
+                style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary, fontSize: 23.sp),
+              ),
+              AutoSizeText(
+                champName,
+                style: TextStyle(fontSize: 18.sp),
+              ),
+              AutoSizeText(
+                "Started : $startTime",
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const Divider(
+                color: Colors.transparent,
+              ),
+              AutoSizeText(
+                "Leaderboard",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.sp),
+              ),
+              FutureBuilder(
+                future: API().sendRequests.get("/get_leaderboard.php?champ_id=$champId"),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+                  if (snapshot.hasData && snapshot.data != null) {
+                    List data = snapshot.data?.data['data'];
+                    return MediaQuery.removePadding(
+                      context: context,
+                      removeTop: true,
+                      child: ListView.builder(
+                        padding: EdgeInsets.symmetric(horizontal: 6).r,
+                        itemCount: data.length,
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        itemBuilder: (context, index) {
+                          return ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: Text.rich(
+                              TextSpan(
+                                children: [
+                                  TextSpan(
+                                    text: "${index + 1}",
+                                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                          fontWeight: FontWeight.values.reversed.elementAtOrNull(index) ?? FontWeight.w100,
+                                          color: index <= 3 ? Theme.of(context).colorScheme.secondary : Theme.of(context).colorScheme.inverseSurface,
+                                        ),
+                                  ),
+                                  WidgetSpan(
+                                    child: Transform.translate(
+                                      offset: const Offset(1, -10),
+                                      child: Text(
+                                        ordinal(index + 1),
+                                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                              fontSize: 10.sp,
+                                              color: index <= 3 ? Theme.of(context).colorScheme.secondary : Theme.of(context).colorScheme.inverseSurface,
+                                            ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            MediaQuery.removePadding(context: context,
-                              removeTop: true,
-                              child: ListView.builder(
-                              physics: const NeverScrollableScrollPhysics(),
-                              shrinkWrap: true,
-                              itemCount: data.length,
-                              itemBuilder: (context, index) {
-                                double leaderBoardTileWidth = MediaQuery.sizeOf(context).width / 4;
-                                return Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                    children: [
-                                      SizedBox(
-                                        width: 60,
-                                        child: AutoSizeText("${index +1}${ordinal(index +1)}",style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                            fontWeight: FontWeight.values.reversed.elementAtOrNull(index) ?? FontWeight.w100,
-                                            color: index <=3 ? Theme.of(context).colorScheme.secondary : Theme.of(context).colorScheme.inverseSurface
-                                        ),),
-                                      ),
-                                      SizedBox(
-                                          width : leaderBoardTileWidth,
-                                          child: AutoSizeText(data.elementAt(index)['user_name'].split(" ").first,style: Theme.of(context).textTheme.titleMedium,),
-                                      ),
-                                      SizedBox(
-                                          width: leaderBoardTileWidth,
-                                          child: AutoSizeText(double.parse(data.elementAt(index)['total_score']).toStringAsFixed(3),style: Theme.of(context).textTheme.titleMedium,),
-                                      ),
-                                      AutoSizeText(convertSecondsToMinutes(stringToSeconds(data.elementAt(index)['time_taken'])),style: Theme.of(context).textTheme.titleMedium,),
-                                    ],
-                                  ),
-                                );
-                              },),
-                            )
-                          ],
-                        ),
-                      );
-                    }
-                    return const SizedBox(
-                      child: Center(child: Text("Nobody qualified"),),
-                    );
-                  },
-                ),
-                const Divider(color: Colors.transparent,),
-                AutoSizeText("Report Card",style: TextStyle(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.bold
-                )),
-                const Divider(color: Colors.transparent,),
-                AnalyticsTable(data: analyticsData),
-                const Divider(color: Colors.transparent,),
-                if(modeName == "play_win_gift")Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    DateTime.parse(endTime).isBefore(DateTime.now()) ? AutoSizeText("Reward you can win",style:TextStyle(
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.bold
-                    )) : AutoSizeText("Reward you won",style:TextStyle(
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.bold
-                    )),
-                    SizedBox(height: 4.r,),
-                    if(giftName!.isNotEmpty && giftName != null) AutoSizeText(giftName!),
-                    if(giftImage != null && giftImage!.isNotEmpty) ClipRRect(
-                      borderRadius: BorderRadius.circular(5),
-                      child: CachedNetworkImage(
-                        imageUrl: giftImage!,
-                        progressIndicatorBuilder:
-                            (context, url, progress) {
-                          return CircularProgressIndicator(
-                            value: progress.progress,
+                            title: AutoSizeText(
+                              data.elementAt(index)['user_name'].split(" ").first,
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                            subtitle: AutoSizeText(
+                              "Score: ${double.parse(data.elementAt(index)['total_score']).toStringAsFixed(3)}",
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                            trailing: AutoSizeText(
+                              convertSecondsToMinutes(stringToSeconds(data.elementAt(index)['time_taken'])),
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
                           );
                         },
                       ),
+                    );
+                    // return Container(
+                    //   decoration: BoxDecoration(
+                    //       border: Border.fromBorderSide(BorderSide(
+                    //         color: Theme.of(context).colorScheme.secondary,
+                    //       )),
+                    //       borderRadius: BorderRadius.circular(5)),
+                    //   child: Column(
+                    //     children: [
+                    //       // const SizedBox(
+                    //       //   height: 8,
+                    //       // ),
+                    //       Padding(
+                    //         padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                    //         child: DefaultTextStyle(
+                    //           style: Theme.of(context).textTheme.titleMedium!.copyWith(fontWeight: FontWeight.bold),
+                    //           child: Row(
+                    //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    //             children: [
+                    //               const SizedBox(width: 60, child: AutoSizeText("Rank")),
+                    //               SizedBox(width: MediaQuery.sizeOf(context).width / 4, child: const AutoSizeText("Name")),
+                    //               SizedBox(width: MediaQuery.sizeOf(context).width / 4, child: const AutoSizeText("Points")),
+                    //               const AutoSizeText("Time")
+                    //             ],
+                    //           ),
+                    //         ),
+                    //       ),
+                    //       MediaQuery.removePadding(
+                    //         context: context,
+                    //         removeTop: true,
+                    //         child: ListView.builder(
+                    //           physics: const NeverScrollableScrollPhysics(),
+                    //           shrinkWrap: true,
+                    //           itemCount: data.length,
+                    //           itemBuilder: (context, index) {
+                    //             double leaderBoardTileWidth = MediaQuery.sizeOf(context).width / 4;
+                    //             return Padding(
+                    //               padding: const EdgeInsets.all(8.0),
+                    //               child: Row(
+                    //                 mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    //                 children: [
+                    //                   SizedBox(
+                    //                     width: 60,
+                    //                     child: AutoSizeText(
+                    //                       "${index + 1}${ordinal(index + 1)}",
+                    //                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    //                           fontWeight: FontWeight.values.reversed.elementAtOrNull(index) ?? FontWeight.w100,
+                    //                           color: index <= 3 ? Theme.of(context).colorScheme.secondary : Theme.of(context).colorScheme.inverseSurface),
+                    //                     ),
+                    //                   ),
+                    //                   SizedBox(
+                    //                     width: leaderBoardTileWidth,
+                    //                     child: AutoSizeText(
+                    //                       data.elementAt(index)['user_name'].split(" ").first,
+                    //                       style: Theme.of(context).textTheme.titleMedium,
+                    //                     ),
+                    //                   ),
+                    //                   SizedBox(
+                    //                     width: leaderBoardTileWidth,
+                    //                     child: AutoSizeText(
+                    //                       double.parse(data.elementAt(index)['total_score']).toStringAsFixed(3),
+                    //                       style: Theme.of(context).textTheme.titleMedium,
+                    //                     ),
+                    //                   ),
+                    //                   AutoSizeText(
+                    //                     convertSecondsToMinutes(stringToSeconds(data.elementAt(index)['time_taken'])),
+                    //                     style: Theme.of(context).textTheme.titleMedium,
+                    //                   ),
+                    //                 ],
+                    //               ),
+                    //             );
+                    //           },
+                    //         ),
+                    //       )
+                    //     ],
+                    //   ),
+                    // );
+                  }
+                  return const SizedBox(
+                    child: Center(
+                      child: Text("Nobody qualified"),
                     ),
-                      // Image(image: NetworkImage(giftImage!)),
-                    const Divider(color: Colors.transparent,),
+                  );
+                },
+              ),
+              const Divider(
+                color: Colors.transparent,
+              ),
+              AutoSizeText("Report Card", style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold)),
+              const Divider(
+                color: Colors.transparent,
+              ),
+              AnalyticsTable(data: analyticsData),
+              const Divider(
+                color: Colors.transparent,
+              ),
+              if (modeName == "play_win_gift")
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    DateTime.parse(endTime).isBefore(DateTime.now())
+                        ? AutoSizeText("Reward you can win", style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold))
+                        : AutoSizeText("Reward you can win", style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold)),
+                    SizedBox(
+                      height: 4.r,
+                    ),
+                    if (giftName!.isNotEmpty && giftName != null) AutoSizeText(giftName!),
+                    if (giftImage != null && giftImage!.isNotEmpty)
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(5),
+                        child: CachedNetworkImage(
+                          imageUrl: giftImage!,
+                          progressIndicatorBuilder: (context, url, progress) {
+                            return CircularProgressIndicator(
+                              value: progress.progress,
+                            );
+                          },
+                        ),
+                      ),
+                    // Image(image: NetworkImage(giftImage!)),
+                    const Divider(
+                      color: Colors.transparent,
+                    ),
                     // if(giftType == "Coupon") Container(
                     //   padding: const EdgeInsets.symmetric(horizontal: 8,vertical: 0),
                     //   decoration: BoxDecoration(
@@ -189,42 +269,49 @@ class QuizAnalytics extends StatelessWidget {
                     //   ),
                     // ),
                     // AutoSizeText("Details",style: Theme.of(context).textTheme.titleMedium,),
-                    if(giftDescription.isNotEmpty) HtmlWidget(giftDescription),
+                    if (giftDescription.isNotEmpty) HtmlWidget(giftDescription),
                   ],
                 ),
-                const SizedBox(
-                  height: kToolbarHeight,
-                )
-              ],
-            ),
-          )
-        ],
-      )
-    );
+              const SizedBox(
+                height: kToolbarHeight,
+              )
+            ],
+          ),
+        )
+      ],
+    ));
   }
+
   String ordinal(int number) {
-    if(!(number >= 1 && number <= 100)) {//here you change the range
+    if (!(number >= 1 && number <= 100)) {
+      //here you change the range
       throw Exception('Invalid number');
     }
 
-    if(number >= 11 && number <= 13) {
+    if (number >= 11 && number <= 13) {
       return 'th';
     }
 
-    switch(number % 10) {
-      case 1: return 'st';
-      case 2: return 'nd';
-      case 3: return 'rd';
-      default: return 'th';
+    switch (number % 10) {
+      case 1:
+        return 'st';
+      case 2:
+        return 'nd';
+      case 3:
+        return 'rd';
+      default:
+        return 'th';
     }
   }
+
   String convertSecondsToMinutes(int seconds) {
-    int minutes = seconds ~/ 60;  // Integer division to get whole minutes
-    int remainingSeconds = seconds % 60;  // Remainder for seconds
+    int minutes = seconds ~/ 60; // Integer division to get whole minutes
+    int remainingSeconds = seconds % 60; // Remainder for seconds
 
     return '$minutes:${remainingSeconds.toString().padLeft(2, '0')}';
   }
-  int stringToSeconds(String time){
+
+  int stringToSeconds(String time) {
     List<String> parts = time.split(':');
     int hours = int.parse(parts[0]);
     int minutes = int.parse(parts[1]);
@@ -236,8 +323,6 @@ class QuizAnalytics extends StatelessWidget {
     return totalSeconds;
   }
 }
-
-
 
 // class UserDataTable extends StatelessWidget {
 //   @override
@@ -289,7 +374,6 @@ class QuizAnalytics extends StatelessWidget {
 //     );
 //   }
 // }
-
 
 // ListView.builder(
 // physics: const NeverScrollableScrollPhysics(),

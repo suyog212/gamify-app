@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +17,7 @@ class FailedToSendOTP extends OTPVerificationStates {}
 class OTPVerificationCubit extends Cubit<OTPVerificationStates> {
   OTPVerificationCubit() : super(OTPVerificationInitial());
 
-  Future<void> sendOtpWithTemplate({required String phoneNumber, required String otp, required BuildContext context}) async {
+  Future<void> sendOtpWithTemplate({required String phoneNumber, required String otp, required BuildContext context, required String appSignature}) async {
     // final url = Uri.parse('https://msg.mtalkz.com/V2/http-api-post-sms'); // Check if yours is different
 
     final headers = {
@@ -41,6 +42,7 @@ class OTPVerificationCubit extends Cubit<OTPVerificationStates> {
       emit(OTPSentSuccessfully());
       // print('OTP sent successfully');
     } else {
+      log(response.data);
       emit(FailedToSendOTP());
       // print('Failed to send OTP: ${response.data}');
     }

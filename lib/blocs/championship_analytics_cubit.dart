@@ -21,39 +21,38 @@ class ChampionshipAnalyticsError extends ChampionshipAnalyticsState {
 }
 
 class ChampionshipAnalyticsCubit extends Cubit<ChampionshipAnalyticsState> {
-  ChampionshipAnalyticsCubit() : super(ChampionshipAnalyticsInitial()){
+  ChampionshipAnalyticsCubit() : super(ChampionshipAnalyticsInitial()) {
     getAllAnalytics();
   }
 
   ChampionshipAnalyticsRepository analyticsRepository = ChampionshipAnalyticsRepository();
 
   void getAllAnalytics() async {
-   try{
-     emit(ChampionshipAnalyticsLoading());
-     List<ChampionshipAnalytics> allAnalytics = await analyticsRepository.getChampionshipAnalyticsData();
-     emit(ChampionshipAnalyticsLoaded(allAnalytics));
-   } on DioException catch (e) {
-     if(e.response != null && e.response!.statusCode == 469) {
-       emit(ChampionshipAnalyticsError("No data found"));
-     } else {
-       emit(ChampionshipAnalyticsError(errorStrings(e.type)));
-     }
-   }
+    try {
+      emit(ChampionshipAnalyticsLoading());
+      List<ChampionshipAnalytics> allAnalytics = await analyticsRepository.getChampionshipAnalyticsData();
+      emit(ChampionshipAnalyticsLoaded(allAnalytics));
+    } on DioException catch (e) {
+      if (e.response != null && e.response!.statusCode == 469) {
+        emit(ChampionshipAnalyticsError("No data found"));
+      } else {
+        emit(ChampionshipAnalyticsError(errorStrings(e.type)));
+      }
+    }
   }
 
   Future<List<ChampionshipAnalytics>> analyticsNavigator() async {
-    try{
+    try {
       List<ChampionshipAnalytics> allAnalytics = await analyticsRepository.getChampionshipAnalyticsData();
       return allAnalytics;
     } on DioException catch (e) {
-      if(e.response != null && e.response!.statusCode == 469) {
+      if (e.response != null && e.response!.statusCode == 469) {
         throw ("No data found");
       } else {
         throw (errorStrings(e.type));
       }
     }
   }
-
 
   void getQuestionAnalytics() async {}
 }

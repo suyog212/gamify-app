@@ -32,11 +32,12 @@ import 'package:kGamify/utils/constants.dart';
 import 'package:kGamify/utils/router.dart';
 import 'package:kGamify/utils/themes.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:upgrader/upgrader.dart';
 
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   HydratedBloc.storage = await HydratedStorage.build(
-    storageDirectory: kIsWeb ? HydratedStorage.webStorageDirectory : await getApplicationDocumentsDirectory(),
+    storageDirectory: kIsWeb ? HydratedStorageDirectory.web : HydratedStorageDirectory((await getTemporaryDirectory()).path),
   );
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
@@ -84,85 +85,96 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(
-          create: (context) => ThemeCubit(),
-        ),
-        BlocProvider(
-          create: (context) => LocaleSelectionCubit(),
-        ),
-        BlocProvider(
-          create: (context) => AuthCubit(),
-        ),
-        BlocProvider(
-          create: (context) => InternetCubit(),
-        ),
-        BlocProvider(
-          create: (context) => ChampionshipsBloc(),
-        ),
-        BlocProvider(
-          create: (context) => QuestionsBloc(),
-        ),
-        BlocProvider(
-          create: (context) => QuestionViewCubit(),
-        ),
-        BlocProvider(
-          create: (context) => ChampionshipAnalyticsCubit(),
-        ),
-        BlocProvider(
-          create: (context) => QuestionAnalyticsCubit(),
-        ),
-        BlocProvider(
-          create: (context) => LanguageBloc(),
-        ),
-        BlocProvider(
-          create: (context) => UserDataBloc(),
-        ),
-        BlocProvider(
-          create: (context) => ForgotPasswordCubit(),
-        ),
-        BlocProvider(
-          create: (context) => EmailVerificationBloc(),
-        ),
-        BlocProvider(
-          create: (context) => OTPVerificationCubit(),
-        ),
-        BlocProvider(
-          create: (context) => OtpCubit(),
-        )
-      ],
-      child: BlocBuilder<InternetCubit, InternetStates>(
-        builder: (context, state) {
-          return MaterialApp.router(
-            showSemanticsDebugger: false,
-            routerConfig: AppRouter().router,
-            title: 'kGamify',
-            theme: appTheme.lightTheme,
-            darkTheme: appTheme.darkTheme,
-            locale: Locale(context.watch<LocaleSelectionCubit>().state),
-            themeMode: context.watch<ThemeCubit>().state,
-            supportedLocales: const [Locale('en'), Locale('da'), Locale('de'), Locale('hi'), Locale('sv')],
-            localizationsDelegates: const [
-              S.delegate,
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
-            scaffoldMessengerKey: snackBarKey,
-            builder: (context, child) {
-              ScreenUtil.init(context);
-              final mediaQueryData = MediaQuery.of(context);
+    final systemUIOverlayStyle = Theme.of(context).brightness == Brightness.light ? SystemUiOverlayStyle.light.copyWith() : SystemUiOverlayStyle.dark.copyWith();
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: systemUIOverlayStyle,
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (context) => ThemeCubit(),
+          ),
+          BlocProvider(
+            create: (context) => LocaleSelectionCubit(),
+          ),
+          BlocProvider(
+            create: (context) => AuthCubit(),
+          ),
+          BlocProvider(
+            create: (context) => InternetCubit(),
+          ),
+          BlocProvider(
+            create: (context) => ChampionshipsBloc(),
+          ),
+          BlocProvider(
+            create: (context) => QuestionsBloc(),
+          ),
+          BlocProvider(
+            create: (context) => QuestionViewCubit(),
+          ),
+          BlocProvider(
+            create: (context) => ChampionshipAnalyticsCubit(),
+          ),
+          BlocProvider(
+            create: (context) => QuestionAnalyticsCubit(),
+          ),
+          BlocProvider(
+            create: (context) => LanguageBloc(),
+          ),
+          BlocProvider(
+            create: (context) => UserDataBloc(),
+          ),
+          BlocProvider(
+            create: (context) => ForgotPasswordCubit(),
+          ),
+          BlocProvider(
+            create: (context) => EmailVerificationBloc(),
+          ),
+          BlocProvider(
+            create: (context) => OTPVerificationCubit(),
+          ),
+          BlocProvider(
+            create: (context) => OtpCubit(),
+          )
+        ],
+        child: BlocBuilder<InternetCubit, InternetStates>(
+          builder: (context, state) {
+            return MaterialApp.router(
+              showSemanticsDebugger: false,
+              routerConfig: AppRouter().router,
+              title: 'kGamify',
+              theme: appTheme.lightTheme,
+              darkTheme: appTheme.darkTheme,
+              locale: Locale(context.watch<LocaleSelectionCubit>().state),
+              themeMode: context.watch<ThemeCubit>().state,
+              supportedLocales: const [Locale('en'), Locale('da'), Locale('de'), Locale('hi'), Locale('sv')],
+              localizationsDelegates: const [
+                S.delegate,
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              scaffoldMessengerKey: snackBarKey,
+              builder: (context, child) {
+                ScreenUtil.init(context);
+                final mediaQueryData = MediaQuery.of(context);
 
-              // Calculate the scaled text factor using the clamp function to ensure it stays within a specified range.
-              final scale = mediaQueryData.textScaler.clamp(
-                minScaleFactor: 0.8, // Minimum scale factor allowed.
-                maxScaleFactor: 1.3, // Maximum scale factor allowed.
-              );
-              return MediaQuery(data: mediaQueryData.copyWith(textScaler: scale), child: child!);
-            },
-          );
-        },
+                // Calculate the scaled text factor using the clamp function to ensure it stays within a specified range.
+                final scale = mediaQueryData.textScaler.clamp(
+                  minScaleFactor: 0.8, // Minimum scale factor allowed.
+                  maxScaleFactor: 1.3, // Maximum scale factor allowed.
+                );
+                return UpgradeAlert(
+                    showReleaseNotes: true,
+                    barrierDismissible: false,
+                    showIgnore: false,
+                    showLater: false,
+                    shouldPopScope: null,
+                    navigatorKey: AppRouter().router?.routerDelegate.navigatorKey,
+                    child: MediaQuery(data: mediaQueryData.copyWith(textScaler: scale), child: SafeArea(child: child!)));
+              },
+            );
+          },
+        ),
       ),
     );
   }

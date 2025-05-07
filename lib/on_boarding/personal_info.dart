@@ -4,14 +4,13 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:csc_picker/csc_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:kGamify/on_boarding/utils/auth_handler.dart';
 import 'package:kGamify/utils/constants.dart';
 import 'package:kGamify/utils/router.dart';
 import 'package:kGamify/utils/widgets/widgets.dart';
+import 'package:validator_regex/validator_regex.dart';
 
 class PersonalInfoInput extends StatefulWidget {
   const PersonalInfoInput({super.key});
@@ -73,14 +72,16 @@ class _PersonalInfoInputState extends State<PersonalInfoInput> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppRouter().router?.state!.fullPath == "/landingPage/profile/personalInfoEdit" ? AppBar() : null,
+      appBar: AppRouter().router?.state.fullPath == "/landingPage/profile/personalInfoEdit" ? AppBar() : null,
       body: SafeArea(
+          child: Form(
+        key: formKey,
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
             SizedBox(
               height: kToolbarHeight,
-              child: AppRouter().router?.state!.fullPath != "/landingPage/profile/personalInfoEdit"
+              child: AppRouter().router?.state.fullPath != "/landingPage/profile/personalInfoEdit"
                   ? Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [TextButton(onPressed: () => context.go("/landingPage"), child: const Text("Skip"))],
@@ -102,7 +103,16 @@ class _PersonalInfoInputState extends State<PersonalInfoInput> {
               controller: _name,
               keyBoardType: TextInputType.name,
               label: "Name",
-              isEnabled: AppRouter().router?.state!.fullPath == "/landingPage/profile/personalInfoEdit",
+              isEnabled: AppRouter().router?.state.fullPath == "/landingPage/profile/personalInfoEdit",
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return "Name cannot be empty.";
+                }
+                if (!Validator.username(value)) {
+                  return "Name cannot contain special characters.";
+                }
+                return null;
+              },
             ),
             const Divider(
               color: Colors.transparent,
@@ -209,364 +219,372 @@ class _PersonalInfoInputState extends State<PersonalInfoInput> {
             const Divider(
               color: Colors.transparent,
             ),
-            SizedBox(
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      AutoSizeText("Qualifications", style: Theme.of(context).textTheme.titleLarge),
-                      IconButton(
-                          onPressed: () {
-                            showModalBottomSheet(
-                              isScrollControlled: true,
-                              isDismissible: false,
-                              sheetAnimationStyle: AnimationStyle(curve: Curves.easeInOut),
-                              context: context,
-                              enableDrag: false,
-                              builder: (context) {
-                                return Material(
-                                  child: StatefulBuilder(
-                                    builder: (context, setState) {
-                                      return Padding(
-                                          padding: const EdgeInsets.all(16),
-                                          child: Form(
-                                            key: formKey,
-                                            child: Padding(
-                                              padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewPadding.bottom),
-                                              child: Column(
-                                                // mainAxisSize: MainAxisSize.min,
-                                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                                children: [
-                                                  SizedBox(
-                                                    height: AppBar().preferredSize.height / 2,
-                                                  ),
-                                                  Row(
-                                                    mainAxisAlignment: MainAxisAlignment.end,
-                                                    children: [IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close))],
-                                                  ),
-                                                  AutoSizeText("Add Qualification", style: Theme.of(context).textTheme.titleLarge),
-                                                  const Divider(
-                                                    color: Colors.transparent,
-                                                  ),
-                                                  DecoratedBox(
-                                                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), border: const Border.fromBorderSide(BorderSide())),
-                                                    child: DropdownButtonHideUnderline(
-                                                      child: DropdownButton(
-                                                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                                                        isExpanded: true,
-                                                        value: qualification,
-                                                        items: List.generate(
-                                                          qualifications.length,
-                                                          (index) => DropdownMenuItem(
-                                                            value: qualifications.elementAt(index),
-                                                            child: Text(qualifications.elementAt(index)),
-                                                          ),
-                                                        ),
-                                                        onChanged: (value) {
-                                                          setState(() {
-                                                            qualification = value!;
-                                                          });
-                                                        },
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  const Divider(
-                                                    color: Colors.transparent,
-                                                  ),
-                                                  TextFormField(
-                                                    onTapOutside: (event) => FocusManager.instance.primaryFocus!.unfocus(),
-                                                    controller: schoolName,
-                                                    decoration: InputDecoration(
-                                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                                                      label: RichText(
-                                                          text: const TextSpan(text: "School/College Name", children: [
-                                                        TextSpan(
-                                                            text: ' *',
-                                                            style: TextStyle(
-                                                              color: Colors.red,
-                                                            ))
-                                                      ])),
-                                                    ),
-                                                    validator: (value) {
-                                                      if (value == null || value.isEmpty) {
-                                                        return 'Please enter the name of the institution';
-                                                      }
-                                                      return null;
-                                                    },
-                                                  ),
-                                                  const Divider(
-                                                    color: Colors.transparent,
-                                                  ),
-                                                  TextFormField(
-                                                    onTapOutside: (event) => FocusManager.instance.primaryFocus!.unfocus(),
-                                                    controller: board,
-                                                    decoration: InputDecoration(
-                                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                                                      label: RichText(
-                                                          text: const TextSpan(text: "University/Board Name", children: [
-                                                        TextSpan(
-                                                            text: ' *',
-                                                            style: TextStyle(
-                                                              color: Colors.red,
-                                                            ))
-                                                      ])),
-                                                    ),
-                                                    validator: (value) {
-                                                      if (value == null || value.isEmpty) {
-                                                        return 'Please enter the name of the University/ Board';
-                                                      }
-                                                      return null;
-                                                    },
-                                                  ),
-                                                  const Divider(
-                                                    color: Colors.transparent,
-                                                  ),
-                                                  TextFormField(
-                                                    onTapOutside: (event) => FocusManager.instance.primaryFocus!.unfocus(),
-                                                    controller: passingYear,
-                                                    decoration: InputDecoration(
-                                                      border: const OutlineInputBorder(),
-                                                      label: RichText(
-                                                          text: const TextSpan(text: "Passing Year", children: [
-                                                        TextSpan(
-                                                            text: ' *',
-                                                            style: TextStyle(
-                                                              color: Colors.red,
-                                                            ))
-                                                      ])),
-                                                    ),
-                                                    keyboardType: TextInputType.number,
-                                                    maxLength: 4,
-                                                    validator: (value) {
-                                                      if (value == null || value.isEmpty) {
-                                                        return 'Please enter valid year';
-                                                      }
-                                                      return null;
-                                                    },
-                                                  ),
-                                                  const Divider(
-                                                    color: Colors.transparent,
-                                                  ),
-                                                  TextFormField(
-                                                    onTapOutside: (event) => FocusManager.instance.primaryFocus!.unfocus(),
-                                                    controller: percentage,
-                                                    decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), label: const Text("CGPA/Percentage")),
-                                                    keyboardType: TextInputType.number,
-                                                    validator: (value) {
-                                                      if (value == null || value.isEmpty) {
-                                                        return 'Please enter valid number';
-                                                      }
-                                                      return null;
-                                                    },
-                                                  ),
-                                                  Visibility(
-                                                      visible: pursuing,
-                                                      child: const Column(
-                                                        mainAxisSize: MainAxisSize.min,
-                                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                                        children: [],
-                                                      )),
-                                                  const Divider(
-                                                    color: Colors.transparent,
-                                                  ),
-                                                  Row(
-                                                    children: [
-                                                      Checkbox(
-                                                        value: pursuing,
-                                                        onChanged: (value) {
-                                                          setState(() {
-                                                            pursuing = !pursuing;
-                                                          });
-                                                        },
-                                                      ),
-                                                      const AutoSizeText("Highest Education ?"),
-                                                      const Divider(
-                                                        color: Colors.transparent,
-                                                      )
-                                                    ],
-                                                  ),
-                                                  Padding(
-                                                    padding: EdgeInsets.symmetric(vertical: 8.r),
-                                                    child: const AutoSizeText.rich(
-                                                        TextSpan(text: "Fields marked with ", children: [TextSpan(text: "*", style: TextStyle(color: Colors.red)), TextSpan(text: " are required.")])),
-                                                  ),
-                                                  FilledButton(
-                                                    onPressed: () async {
-                                                      if (schoolName.text.isNotEmpty && board.text.isNotEmpty && passingYear.text.isNotEmpty) {
-                                                        AuthHandler().saveUserQualification(qualification, schoolName.text, board.text, int.parse(passingYear.text), double.parse(percentage.text),
-                                                            pursuing ? 1 : 0, Hive.box(userDataDB).get("personalInfo")['user_id']);
-                                                        await Hive.box(qualificationDataDB).put(qualification, {
-                                                          "SchoolName": schoolName.text,
-                                                          "Board": board.text,
-                                                          "percentage": percentage.text,
-                                                          "PassingYear": passingYear.text,
-                                                          "HighestEd": pursuing
-                                                        }).whenComplete(
-                                                          () {
-                                                            schoolName.clear();
-                                                            board.clear();
-                                                            percentage.clear();
-                                                            passingYear.clear();
-                                                            pursuing = false;
-                                                            if (!context.mounted) {
-                                                              return;
-                                                            }
-                                                            Navigator.pop(context);
-                                                            setState(() {});
-                                                          },
-                                                        );
-                                                      } else {
-                                                        snackBarKey.currentState!.showSnackBar(const SnackBar(content: Text("Fill all required fields.")));
-                                                      }
-                                                    },
-                                                    child: const AutoSizeText("Save"),
-                                                  )
-                                                ],
-                                              ),
-                                            ),
-                                          ));
-                                    },
-                                  ),
-                                );
-                              },
-                            );
-                          },
-                          icon: const Icon(Icons.add))
-                    ],
-                  ),
-                  // TODO : Show an option to add qualification and display them in tiles first school second highSchool then graduation, post grdauation,etc
-                  ValueListenableBuilder(
-                    valueListenable: Hive.box(qualificationDataDB).listenable(),
-                    builder: (context, value, child) {
-                      return Visibility(
-                        visible: Hive.box(qualificationDataDB).length != 0,
-                        replacement: Center(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 32.0),
-                            child: AutoSizeText.rich(
-                                TextSpan(text: "Click on ", children: [TextSpan(text: "\"+\"", style: Theme.of(context).textTheme.titleLarge), const TextSpan(text: " to add data.")])),
-                          ),
-                        ),
-                        child: ListView.builder(
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: Hive.box(qualificationDataDB).length,
-                          shrinkWrap: true,
-                          itemBuilder: (context, index) {
-                            final curr = Hive.box(qualificationDataDB).getAt(index);
-                            final key = Hive.box(qualificationDataDB).keyAt(index);
-                            return Slidable(
-                              endActionPane: ActionPane(motion: const ScrollMotion(), children: [
-                                SlidableAction(
-                                  onPressed: (context) {
-                                    Hive.box(qualificationDataDB).delete(key);
-                                  },
-                                  icon: Icons.delete,
-                                  label: "Remove",
-                                ),
-                                SlidableAction(
-                                  onPressed: (context) {},
-                                  icon: Icons.edit,
-                                  label: "Edit",
-                                ),
-                              ]),
-                              child: Padding(
-                                padding: const EdgeInsets.only(bottom: 8.0),
-                                child: DecoratedBox(
-                                  decoration: BoxDecoration(border: Border.fromBorderSide(BorderSide(color: Theme.of(context).colorScheme.secondary)), borderRadius: BorderRadius.circular(10)),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(16.0),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                                      children: [
-                                        // Row(
-                                        //   children: [
-                                        //     AutoSizeText("Highest Qualification")
-                                        //   ],
-                                        // ),
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          crossAxisAlignment: CrossAxisAlignment.end,
-                                          children: [
-                                            Expanded(
-                                                child: AutoSizeText(
-                                              curr['SchoolName'],
-                                              style: Theme.of(context).textTheme.headlineSmall!.copyWith(color: Theme.of(context).colorScheme.secondary, fontWeight: FontWeight.bold),
-                                              maxFontSize: 20,
-                                            )),
-                                            AutoSizeText(
-                                              curr["PassingYear"],
-                                              style: Theme.of(context).textTheme.headlineSmall!.copyWith(color: Theme.of(context).colorScheme.secondary, fontWeight: FontWeight.bold),
-                                              maxFontSize: 20,
-                                            )
-                                          ],
-                                        ),
-                                        const Divider(
-                                          height: 4,
-                                          color: Colors.transparent,
-                                        ),
-                                        Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            AutoSizeText(
-                                              "$key",
-                                              style: Theme.of(context).textTheme.titleMedium,
-                                              maxFontSize: 20,
-                                            ),
-                                            const Divider(
-                                              height: 4,
-                                              color: Colors.transparent,
-                                            ),
-                                            AutoSizeText(
-                                              curr['Board'],
-                                              style: Theme.of(context).textTheme.titleMedium!.copyWith(color: Colors.grey.shade600),
-                                              maxFontSize: 14,
-                                            ),
-                                            AutoSizeText(
-                                              "Percentage/CGPA : ${curr["percentage"]}",
-                                              style: Theme.of(context).textTheme.titleMedium!.copyWith(color: Colors.grey.shade600),
-                                              maxFontSize: 14,
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      );
-                    },
-                  )
-                ],
-              ),
-            )
+            // SizedBox(
+            //   child: Column(
+            //     children: [
+            //       Row(
+            //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            //         children: [
+            //           AutoSizeText("Qualifications", style: Theme.of(context).textTheme.titleLarge),
+            //           IconButton(
+            //               onPressed: () {
+            //                 showModalBottomSheet(
+            //                   isScrollControlled: true,
+            //                   isDismissible: false,
+            //                   sheetAnimationStyle: AnimationStyle(curve: Curves.easeInOut),
+            //                   context: context,
+            //                   enableDrag: false,
+            //                   builder: (context) {
+            //                     return Material(
+            //                       child: StatefulBuilder(
+            //                         builder: (context, setState) {
+            //                           return Padding(
+            //                               padding: const EdgeInsets.all(16),
+            //                               child: Form(
+            //                                 key: formKey,
+            //                                 child: Padding(
+            //                                   padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewPadding.bottom),
+            //                                   child: Column(
+            //                                     // mainAxisSize: MainAxisSize.min,
+            //                                     crossAxisAlignment: CrossAxisAlignment.stretch,
+            //                                     children: [
+            //                                       SizedBox(
+            //                                         height: AppBar().preferredSize.height / 2,
+            //                                       ),
+            //                                       Row(
+            //                                         mainAxisAlignment: MainAxisAlignment.end,
+            //                                         children: [IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close))],
+            //                                       ),
+            //                                       AutoSizeText("Add Qualification", style: Theme.of(context).textTheme.titleLarge),
+            //                                       const Divider(
+            //                                         color: Colors.transparent,
+            //                                       ),
+            //                                       DecoratedBox(
+            //                                         decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), border: const Border.fromBorderSide(BorderSide())),
+            //                                         child: DropdownButtonHideUnderline(
+            //                                           child: DropdownButton(
+            //                                             padding: const EdgeInsets.symmetric(horizontal: 12),
+            //                                             isExpanded: true,
+            //                                             value: qualification,
+            //                                             items: List.generate(
+            //                                               qualifications.length,
+            //                                               (index) => DropdownMenuItem(
+            //                                                 value: qualifications.elementAt(index),
+            //                                                 child: Text(qualifications.elementAt(index)),
+            //                                               ),
+            //                                             ),
+            //                                             onChanged: (value) {
+            //                                               setState(() {
+            //                                                 qualification = value!;
+            //                                               });
+            //                                             },
+            //                                           ),
+            //                                         ),
+            //                                       ),
+            //                                       const Divider(
+            //                                         color: Colors.transparent,
+            //                                       ),
+            //                                       TextFormField(
+            //                                         onTapOutside: (event) => FocusManager.instance.primaryFocus!.unfocus(),
+            //                                         controller: schoolName,
+            //                                         decoration: InputDecoration(
+            //                                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+            //                                           label: RichText(
+            //                                               text: const TextSpan(text: "School/College Name", children: [
+            //                                             TextSpan(
+            //                                                 text: ' *',
+            //                                                 style: TextStyle(
+            //                                                   color: Colors.red,
+            //                                                 ))
+            //                                           ])),
+            //                                         ),
+            //                                         validator: (value) {
+            //                                           if (value == null || value.isEmpty) {
+            //                                             return 'Please enter the name of the institution';
+            //                                           }
+            //                                           return null;
+            //                                         },
+            //                                       ),
+            //                                       const Divider(
+            //                                         color: Colors.transparent,
+            //                                       ),
+            //                                       TextFormField(
+            //                                         onTapOutside: (event) => FocusManager.instance.primaryFocus!.unfocus(),
+            //                                         controller: board,
+            //                                         decoration: InputDecoration(
+            //                                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+            //                                           label: RichText(
+            //                                               text: const TextSpan(text: "University/Board Name", children: [
+            //                                             TextSpan(
+            //                                                 text: ' *',
+            //                                                 style: TextStyle(
+            //                                                   color: Colors.red,
+            //                                                 ))
+            //                                           ])),
+            //                                         ),
+            //                                         validator: (value) {
+            //                                           if (value == null || value.isEmpty) {
+            //                                             return 'Please enter the name of the University/ Board';
+            //                                           }
+            //                                           return null;
+            //                                         },
+            //                                       ),
+            //                                       const Divider(
+            //                                         color: Colors.transparent,
+            //                                       ),
+            //                                       TextFormField(
+            //                                         onTapOutside: (event) => FocusManager.instance.primaryFocus!.unfocus(),
+            //                                         controller: passingYear,
+            //                                         decoration: InputDecoration(
+            //                                           border: const OutlineInputBorder(),
+            //                                           label: RichText(
+            //                                               text: const TextSpan(text: "Passing Year", children: [
+            //                                             TextSpan(
+            //                                                 text: ' *',
+            //                                                 style: TextStyle(
+            //                                                   color: Colors.red,
+            //                                                 ))
+            //                                           ])),
+            //                                         ),
+            //                                         keyboardType: TextInputType.number,
+            //                                         maxLength: 4,
+            //                                         validator: (value) {
+            //                                           if (value == null || value.isEmpty) {
+            //                                             return 'Please enter valid year';
+            //                                           }
+            //                                           return null;
+            //                                         },
+            //                                       ),
+            //                                       const Divider(
+            //                                         color: Colors.transparent,
+            //                                       ),
+            //                                       TextFormField(
+            //                                         onTapOutside: (event) => FocusManager.instance.primaryFocus!.unfocus(),
+            //                                         controller: percentage,
+            //                                         decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), label: const Text("CGPA/Percentage")),
+            //                                         keyboardType: TextInputType.number,
+            //                                         validator: (value) {
+            //                                           if (value == null || value.isEmpty) {
+            //                                             return 'Please enter valid number';
+            //                                           }
+            //                                           return null;
+            //                                         },
+            //                                       ),
+            //                                       Visibility(
+            //                                           visible: pursuing,
+            //                                           child: const Column(
+            //                                             mainAxisSize: MainAxisSize.min,
+            //                                             crossAxisAlignment: CrossAxisAlignment.start,
+            //                                             children: [],
+            //                                           )),
+            //                                       const Divider(
+            //                                         color: Colors.transparent,
+            //                                       ),
+            //                                       Row(
+            //                                         children: [
+            //                                           Checkbox(
+            //                                             value: pursuing,
+            //                                             onChanged: (value) {
+            //                                               setState(() {
+            //                                                 pursuing = !pursuing;
+            //                                               });
+            //                                             },
+            //                                           ),
+            //                                           const AutoSizeText("Highest Education ?"),
+            //                                           const Divider(
+            //                                             color: Colors.transparent,
+            //                                           )
+            //                                         ],
+            //                                       ),
+            //                                       Padding(
+            //                                         padding: EdgeInsets.symmetric(vertical: 8.r),
+            //                                         child: const AutoSizeText.rich(
+            //                                             TextSpan(text: "Fields marked with ", children: [TextSpan(text: "*", style: TextStyle(color: Colors.red)), TextSpan(text: " are required.")])),
+            //                                       ),
+            //                                       FilledButton(
+            //                                         onPressed: () async {
+            //                                           if (schoolName.text.isNotEmpty && board.text.isNotEmpty && passingYear.text.isNotEmpty) {
+            //                                             AuthHandler().saveUserQualification(qualification, schoolName.text, board.text, int.parse(passingYear.text), double.parse(percentage.text),
+            //                                                 pursuing ? 1 : 0, Hive.box(userDataDB).get("personalInfo")['user_id']);
+            //                                             await Hive.box(qualificationDataDB).put(qualification, {
+            //                                               "SchoolName": schoolName.text,
+            //                                               "Board": board.text,
+            //                                               "percentage": percentage.text,
+            //                                               "PassingYear": passingYear.text,
+            //                                               "HighestEd": pursuing
+            //                                             }).whenComplete(
+            //                                               () {
+            //                                                 schoolName.clear();
+            //                                                 board.clear();
+            //                                                 percentage.clear();
+            //                                                 passingYear.clear();
+            //                                                 pursuing = false;
+            //                                                 if (!context.mounted) {
+            //                                                   return;
+            //                                                 }
+            //                                                 Navigator.pop(context);
+            //                                                 setState(() {});
+            //                                               },
+            //                                             );
+            //                                           } else {
+            //                                             snackBarKey.currentState!.showSnackBar(const SnackBar(content: Text("Fill all required fields.")));
+            //                                           }
+            //                                         },
+            //                                         child: const AutoSizeText("Save"),
+            //                                       )
+            //                                     ],
+            //                                   ),
+            //                                 ),
+            //                               ));
+            //                         },
+            //                       ),
+            //                     );
+            //                   },
+            //                 );
+            //               },
+            //               icon: const Icon(Icons.add))
+            //         ],
+            //       ),
+            //       // TODO : Show an option to add qualification and display them in tiles first school second highSchool then graduation, post grdauation,etc
+            //       ValueListenableBuilder(
+            //         valueListenable: Hive.box(qualificationDataDB).listenable(),
+            //         builder: (context, value, child) {
+            //           return Visibility(
+            //             visible: Hive.box(qualificationDataDB).length != 0,
+            //             replacement: Center(
+            //               child: Padding(
+            //                 padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 32.0),
+            //                 child: AutoSizeText.rich(
+            //                     TextSpan(text: "Click on ", children: [TextSpan(text: "\"+\"", style: Theme.of(context).textTheme.titleLarge), const TextSpan(text: " to add data.")])),
+            //               ),
+            //             ),
+            //             child: ListView.builder(
+            //               physics: const NeverScrollableScrollPhysics(),
+            //               itemCount: Hive.box(qualificationDataDB).length,
+            //               shrinkWrap: true,
+            //               itemBuilder: (context, index) {
+            //                 final curr = Hive.box(qualificationDataDB).getAt(index);
+            //                 final key = Hive.box(qualificationDataDB).keyAt(index);
+            //                 return Slidable(
+            //                   endActionPane: ActionPane(motion: const ScrollMotion(), children: [
+            //                     SlidableAction(
+            //                       onPressed: (context) {
+            //                         Hive.box(qualificationDataDB).delete(key);
+            //                       },
+            //                       icon: Icons.delete,
+            //                       label: "Remove",
+            //                     ),
+            //                     SlidableAction(
+            //                       onPressed: (context) {},
+            //                       icon: Icons.edit,
+            //                       label: "Edit",
+            //                     ),
+            //                   ]),
+            //                   child: Padding(
+            //                     padding: const EdgeInsets.only(bottom: 8.0),
+            //                     child: DecoratedBox(
+            //                       decoration: BoxDecoration(border: Border.fromBorderSide(BorderSide(color: Theme.of(context).colorScheme.secondary)), borderRadius: BorderRadius.circular(10)),
+            //                       child: Padding(
+            //                         padding: const EdgeInsets.all(16.0),
+            //                         child: Column(
+            //                           crossAxisAlignment: CrossAxisAlignment.stretch,
+            //                           children: [
+            //                             // Row(
+            //                             //   children: [
+            //                             //     AutoSizeText("Highest Qualification")
+            //                             //   ],
+            //                             // ),
+            //                             Row(
+            //                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            //                               crossAxisAlignment: CrossAxisAlignment.end,
+            //                               children: [
+            //                                 Expanded(
+            //                                     child: AutoSizeText(
+            //                                   curr['SchoolName'],
+            //                                   style: Theme.of(context).textTheme.headlineSmall!.copyWith(color: Theme.of(context).colorScheme.secondary, fontWeight: FontWeight.bold),
+            //                                   maxFontSize: 20,
+            //                                 )),
+            //                                 AutoSizeText(
+            //                                   curr["PassingYear"],
+            //                                   style: Theme.of(context).textTheme.headlineSmall!.copyWith(color: Theme.of(context).colorScheme.secondary, fontWeight: FontWeight.bold),
+            //                                   maxFontSize: 20,
+            //                                 )
+            //                               ],
+            //                             ),
+            //                             const Divider(
+            //                               height: 4,
+            //                               color: Colors.transparent,
+            //                             ),
+            //                             Column(
+            //                               crossAxisAlignment: CrossAxisAlignment.start,
+            //                               children: [
+            //                                 AutoSizeText(
+            //                                   "$key",
+            //                                   style: Theme.of(context).textTheme.titleMedium,
+            //                                   maxFontSize: 20,
+            //                                 ),
+            //                                 const Divider(
+            //                                   height: 4,
+            //                                   color: Colors.transparent,
+            //                                 ),
+            //                                 AutoSizeText(
+            //                                   curr['Board'],
+            //                                   style: Theme.of(context).textTheme.titleMedium!.copyWith(color: Colors.grey.shade600),
+            //                                   maxFontSize: 14,
+            //                                 ),
+            //                                 AutoSizeText(
+            //                                   "Percentage/CGPA : ${curr["percentage"]}",
+            //                                   style: Theme.of(context).textTheme.titleMedium!.copyWith(color: Colors.grey.shade600),
+            //                                   maxFontSize: 14,
+            //                                 ),
+            //                               ],
+            //                             ),
+            //                           ],
+            //                         ),
+            //                       ),
+            //                     ),
+            //                   ),
+            //                 );
+            //               },
+            //             ),
+            //           );
+            //         },
+            //       )
+            //     ],
+            //   ),
+            // )
           ],
         ),
-      ),
+      )),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16),
         child: FilledButton(
           onPressed: () {
-            // print(Hive.box(userDataDB).get("personalInfo"));
-            try {
-              AuthHandler().saveUserData(
-                  Hive.box(userDataDB).get("personalInfo")['user_id'], _name.text, _email.text, _age.text, "$city,$state,$country", _phone.text, Hive.box(userDataDB).get("interests").join(","));
-              Map<dynamic, dynamic> data = Hive.box(userDataDB).get("personalInfo");
-              // print(data['age']);
-              data["name"] = _name.text.trim();
-              data["email"] = _email.text.trim();
-              data["age"] = _age.text.trim();
-              data["country"] = country;
-              data["state"] = state;
-              data["city"] = city;
-              Hive.box(userDataDB).put("personalInfo", data);
-            } catch (e) {
-              log(e.toString());
-              snackBarKey.currentState?.showSnackBar(const SnackBar(content: Text("Something went wrong. Try again later.")));
+            if (formKey.currentState!.validate()) {
+              try {
+                AuthHandler().saveUserData(
+                    Hive.box(userDataDB).get("personalInfo")['user_id'], _name.text, _email.text, _age.text, "$city,$state,$country", _phone.text, Hive.box(userDataDB).get("interests").join(","));
+                Map<dynamic, dynamic> data = Hive.box(userDataDB).get("personalInfo");
+                // print(data['age']);
+                data["name"] = _name.text.trim();
+                data["email"] = _email.text.trim();
+                data["age"] = _age.text.trim();
+                data["country"] = country;
+                data["state"] = state;
+                data["city"] = city;
+                Hive.box(userDataDB).put("personalInfo", data).whenComplete(
+                  () {
+                    if (!context.mounted) return;
+                    context.pop();
+                  },
+                );
+                snackBarKey.currentState?.showSnackBar(SnackBar(content: Text("Profile updated successfully")));
+              } catch (e) {
+                log(e.toString());
+                snackBarKey.currentState?.showSnackBar(const SnackBar(content: Text("Something went wrong. Try again later.")));
+              }
             }
+            // print(Hive.box(userDataDB).get("personalInfo"));
           },
           style: FilledButton.styleFrom(fixedSize: Size.fromWidth(MediaQuery.sizeOf(context).width)),
           child: const Text("Proceed"),

@@ -58,16 +58,20 @@ class ChampionshipsBloc extends Cubit<ChampionshipsStates> {
   }
 
   void searchChampionship(String query) {
-    emit(CategoriesLoadedState(models
-        .where(
-          (element) =>
-              element.champName!.toLowerCase().contains(query) ||
-              element.categoryName!.toLowerCase().contains(query) ||
-              element.championshipDetails!.any(
-                (details) => details.uniqueId?.contains(query) ?? false,
-              ),
-        )
-        .toList()));
+    final lowerQuery = query.toLowerCase();
+
+    final filtered = models.where((element) {
+      final champName = element.champName?.toLowerCase() ?? '';
+      final categoryName = element.categoryName?.toLowerCase() ?? '';
+      final hasMatchingDetail = element.championshipDetails?.any(
+            (details) => details.uniqueId?.toLowerCase().contains(lowerQuery) ?? false,
+          ) ??
+          false;
+
+      return champName.contains(lowerQuery) || categoryName.contains(lowerQuery) || hasMatchingDetail;
+    }).toList();
+
+    emit(CategoriesLoadedState(filtered));
   }
 
   void showFilteredChamps(List<String> filters) {
@@ -93,7 +97,7 @@ class ChampionshipsBloc extends Cubit<ChampionshipsStates> {
               return a.champName!.compareTo(b.champName!);
             },
           );
-          emit(CategoriesLoadedState(models));
+          emit(CategoriesLoadedState(models.reversed.toList()));
         }
       case "Date":
         {

@@ -1,8 +1,13 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:kGamify/api/api.dart';
 import 'package:kGamify/models/questions_models.dart';
 import 'package:kGamify/utils/constants.dart';
+
+List<QuestionsDetailsModel> parseQuestions(List<dynamic> data) {
+  return data.map((e) => QuestionsDetailsModel.fromJson(e)).toList();
+}
 
 class QuestionsRepository {
   final API _api = API();
@@ -15,7 +20,7 @@ class QuestionsRepository {
       if (e.response!.statusCode != 200) {
         Response response = await _api.sendRequests.get("/get_question.php?mode_id=$modeId");
         List<dynamic> questionData = response.data['data'];
-        return questionData.map((e) => QuestionsDetailsModel.fromJson(e)).toList();
+        return await compute(parseQuestions, questionData);
       } else {
         rethrow;
       }
@@ -44,9 +49,9 @@ class QuestionsRepository {
     }
   }
 
-  reportWrongQuestion(int questionId, int champId, int teacherId) async {
+  reportWrongQuestion(int questionId, int champId, int teacherId, userId) async {
     try {
-      Response response = await _api.sendRequests.post("/post_wrong_questions.php?question_id=$questionId&champ_id=$champId&teacher_id=$teacherId");
+      Response response = await _api.sendRequests.post("/post_wrong_questions.php?question_id=$questionId&champ_id=$champId&teacher_id=$teacherId&user_id=$userId");
       int status = response.data['status'];
       return status;
     } catch (e) {

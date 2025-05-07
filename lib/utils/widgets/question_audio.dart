@@ -1,4 +1,5 @@
 import 'dart:math';
+
 import 'package:audio_session/audio_session.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -13,7 +14,7 @@ class QuestionAudio extends StatefulWidget {
   State<QuestionAudio> createState() => _QuestionAudioState();
 }
 
-class _QuestionAudioState extends State<QuestionAudio> with WidgetsBindingObserver{
+class _QuestionAudioState extends State<QuestionAudio> with WidgetsBindingObserver {
   final _player = AudioPlayer();
 
   @override
@@ -29,37 +30,40 @@ class _QuestionAudioState extends State<QuestionAudio> with WidgetsBindingObserv
     final session = await AudioSession.instance;
     await session.configure(const AudioSessionConfiguration.speech());
     // Listen to errors during playback.
-    _player.playbackEventStream.listen((event) {},
-        onError: (Object e, StackTrace stackTrace) {
-          debugPrint('A stream error occurred: $e');
-        });
+    _player.playbackEventStream.listen((event) {}, onError: (Object e, StackTrace stackTrace) {
+      // debugPrint('A stream error occurred: $e');
+    });
     // Try to load audio from a source and catch any errors.
     try {
       // AAC example: https://dl.espressif.com/dl/audio/ff-16b-2c-44100hz.aac
       await _player.setAudioSource(AudioSource.uri(Uri.parse(widget.audioSource)));
     } on PlayerException {
-      if(!context.mounted) return;
+      if (!context.mounted) return;
       showDialog(
         context: context,
         builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-          return Dialog(
-            insetPadding: const EdgeInsets.all(16),
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10)),
-             child: Column(
-               children: [
-                 Icon(Icons.error_outline,size: 64.r,),
-                 Text("Something went wrong.",style: TextStyle(
-                     fontSize: 18.sp
-                 ),),
-                 Expanded(child: OutlinedButton(onPressed: () => _init(context), child: const Text("Retry")))
-               ],
-             ),
+          return StatefulBuilder(
+            builder: (context, setState) {
+              return Dialog(
+                insetPadding: const EdgeInsets.all(16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      size: 64.r,
+                    ),
+                    Text(
+                      "Something went wrong.",
+                      style: TextStyle(fontSize: 18.sp),
+                    ),
+                    Expanded(child: OutlinedButton(onPressed: () => _init(context), child: const Text("Retry")))
+                  ],
+                ),
+              );
+            },
           );
-        },);
-      },
+        },
       );
     }
   }
@@ -85,37 +89,32 @@ class _QuestionAudioState extends State<QuestionAudio> with WidgetsBindingObserv
 
   /// Collects the data useful for displaying in a seek bar, using a handy
   /// feature of rx_dart to combine the 3 streams of interest into one.
-  Stream<PositionData> get _positionDataStream =>
-      Rx.combineLatest3<Duration, Duration, Duration?, PositionData>(
-          _player.positionStream,
-          _player.bufferedPositionStream,
-          _player.durationStream,
-              (position, bufferedPosition, duration) => PositionData(
-              position, bufferedPosition, duration ?? Duration.zero));
+  Stream<PositionData> get _positionDataStream => Rx.combineLatest3<Duration, Duration, Duration?, PositionData>(
+      _player.positionStream, _player.bufferedPositionStream, _player.durationStream, (position, bufferedPosition, duration) => PositionData(position, bufferedPosition, duration ?? Duration.zero));
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
         ControlButtons(_player),
-        Expanded(child: StreamBuilder<PositionData>(
-          stream: _positionDataStream,
-          builder: (context, snapshot) {
-            final positionData = snapshot.data;
-            return SeekBar(
-              duration: positionData?.duration ?? Duration.zero,
-              position: positionData?.position ?? Duration.zero,
-              bufferedPosition:
-              positionData?.bufferedPosition ?? Duration.zero,
-              onChangeEnd: _player.seek,
-            );
-          },
-        ),)
+        Expanded(
+          child: StreamBuilder<PositionData>(
+            stream: _positionDataStream,
+            builder: (context, snapshot) {
+              final positionData = snapshot.data;
+              return SeekBar(
+                duration: positionData?.duration ?? Duration.zero,
+                position: positionData?.position ?? Duration.zero,
+                bufferedPosition: positionData?.bufferedPosition ?? Duration.zero,
+                onChangeEnd: _player.seek,
+              );
+            },
+          ),
+        )
       ],
     );
   }
 }
-
 
 class ControlButtons extends StatelessWidget {
   final AudioPlayer player;
@@ -154,8 +153,7 @@ class ControlButtons extends StatelessWidget {
             final playerState = snapshot.data;
             final processingState = playerState?.processingState;
             final playing = playerState?.playing;
-            if (processingState == ProcessingState.loading ||
-                processingState == ProcessingState.buffering) {
+            if (processingState == ProcessingState.loading || processingState == ProcessingState.buffering) {
               return Container(
                 margin: const EdgeInsets.all(8.0),
                 width: 42.r,
@@ -255,8 +253,7 @@ class SeekBarState extends State<SeekBar> {
             child: Slider(
               min: 0.0,
               max: widget.duration.inMilliseconds.toDouble(),
-              value: min(widget.bufferedPosition.inMilliseconds.toDouble(),
-                  widget.duration.inMilliseconds.toDouble()),
+              value: min(widget.bufferedPosition.inMilliseconds.toDouble(), widget.duration.inMilliseconds.toDouble()),
               onChanged: (value) {
                 setState(() {
                   _dragValue = value;
@@ -281,8 +278,7 @@ class SeekBarState extends State<SeekBar> {
           child: Slider(
             min: 0.0,
             max: widget.duration.inMilliseconds.toDouble(),
-            value: min(_dragValue ?? widget.position.inMilliseconds.toDouble(),
-                widget.duration.inMilliseconds.toDouble()),
+            value: min(_dragValue ?? widget.position.inMilliseconds.toDouble(), widget.duration.inMilliseconds.toDouble()),
             onChanged: (value) {
               setState(() {
                 _dragValue = value;
@@ -302,12 +298,7 @@ class SeekBarState extends State<SeekBar> {
         Positioned(
           right: 16.0,
           bottom: 0.0,
-          child: Text(
-              RegExp(r'((^0*[1-9]\d*:)?\d{2}:\d{2})\.\d+$')
-                  .firstMatch("$_remaining")
-                  ?.group(1) ??
-                  '$_remaining',
-              style: Theme.of(context).textTheme.bodySmall),
+          child: Text(RegExp(r'((^0*[1-9]\d*:)?\d{2}:\d{2})\.\d+$').firstMatch("$_remaining")?.group(1) ?? '$_remaining', style: Theme.of(context).textTheme.bodySmall),
         ),
       ],
     );
@@ -322,19 +313,19 @@ class HiddenThumbComponentShape extends SliderComponentShape {
 
   @override
   void paint(
-      PaintingContext context,
-      Offset center, {
-        required Animation<double> activationAnimation,
-        required Animation<double> enableAnimation,
-        required bool isDiscrete,
-        required TextPainter labelPainter,
-        required RenderBox parentBox,
-        required SliderThemeData sliderTheme,
-        required TextDirection textDirection,
-        required double value,
-        required double textScaleFactor,
-        required Size sizeWithOverflow,
-      }) {}
+    PaintingContext context,
+    Offset center, {
+    required Animation<double> activationAnimation,
+    required Animation<double> enableAnimation,
+    required bool isDiscrete,
+    required TextPainter labelPainter,
+    required RenderBox parentBox,
+    required SliderThemeData sliderTheme,
+    required TextDirection textDirection,
+    required double value,
+    required double textScaleFactor,
+    required Size sizeWithOverflow,
+  }) {}
 }
 
 class PositionData {
@@ -367,11 +358,7 @@ void showSliderDialog({
           height: 100.0,
           child: Column(
             children: [
-              Text('${snapshot.data?.toStringAsFixed(1)}$valueSuffix',
-                  style: const TextStyle(
-                      fontFamily: 'Fixed',
-                      fontWeight: FontWeight.bold,
-                      fontSize: 24.0)),
+              Text('${snapshot.data?.toStringAsFixed(1)}$valueSuffix', style: const TextStyle(fontFamily: 'Fixed', fontWeight: FontWeight.bold, fontSize: 24.0)),
               Slider(
                 divisions: divisions,
                 min: min,

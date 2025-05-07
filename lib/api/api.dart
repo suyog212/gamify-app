@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:dio_cache_interceptor/dio_cache_interceptor.dart';
-import 'package:pretty_dio_logger/pretty_dio_logger.dart';
+// import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 class API {
   final options = CacheOptions(
@@ -16,7 +16,7 @@ class API {
   final Dio _dio = Dio();
   API() {
     _dio.options.baseUrl = "https://kgamify.in/championshipmaker/apis";
-    _dio.interceptors.add(PrettyDioLogger());
+    // _dio.interceptors.add(PrettyDioLogger());
     _dio.interceptors.add(DioCacheInterceptor(options: options));
   }
 

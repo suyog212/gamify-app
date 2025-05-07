@@ -1,5 +1,5 @@
 name: kGamify
-description: "A new Flutter project."
+description: "A knowledge championship platform."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+2
+version: 1.0.3+8
 
 environment:
   sdk: ^3.5.3
@@ -35,11 +35,11 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
-  go_router: ^14.3.0
+  go_router: ^15.1.1
   dio: ^5.7.0
   hive_flutter: ^1.1.0
-  flutter_bloc: ^8.1.6
-  hydrated_bloc: ^9.1.5
+  flutter_bloc: ^9.1.0
+  hydrated_bloc: ^10.0.0
   path_provider: ^2.1.5
   vector_graphics: ^1.1.11+1
   flutter_svg: ^2.0.10+1
@@ -49,15 +49,15 @@ dependencies:
   auto_size_text: ^3.0.0
   url_launcher: ^6.3.1
   csc_picker: ^0.2.7
-  flutter_slidable: ^3.1.1
+  flutter_slidable: ^4.0.0
   cached_network_image: ^3.4.1
   skeletonizer: ^1.4.2
-  dots_indicator: ^3.0.0
+  dots_indicator: ^4.0.1
   carousel_slider: ^5.0.0
-  file_picker: ^8.1.3
+  file_picker: ^10.1.2
   pie_chart: ^5.4.0
   grouped_list: ^6.0.0
-  dio_cache_interceptor: ^3.5.0
+  dio_cache_interceptor: ^4.0.3
   timeago: ^3.7.0
   flutter_animate: ^4.5.0
   flutter_custom_clippers: ^2.1.0
@@ -73,7 +73,7 @@ dependencies:
   restart_app: ^1.3.2
   rxdart: ^0.28.0
 #  flutter_super_html_viewer: ^0.1.0
-  flutter_widget_from_html: ^0.15.3
+  flutter_widget_from_html: ^0.16.0
   just_audio: ^0.9.42
 #  path: ^1.9.1
   uuid: ^4.5.1
@@ -96,6 +96,10 @@ dependencies:
   pinput: ^5.0.1
   flutter_secure_storage: ^9.2.4
   dice_bear: ^0.1.7
+  smooth_page_indicator: ^1.2.1
+  flextras: ^1.0.0
+  extra_alignments: ^1.0.0+1
+  sms_autofill: ^2.4.1
 
 dev_dependencies:
   flutter_test:
@@ -106,7 +110,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^4.0.0
+  flutter_lints: ^5.0.0
   pretty_dio_logger: ^1.4.0
   flutter_launcher_icons: ^0.14.1
   package_rename: ^1.10.0

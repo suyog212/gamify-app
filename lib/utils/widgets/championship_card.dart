@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -115,7 +116,7 @@ class _ChampionshipInformationCardState extends State<ChampionshipInformationCar
               return StatefulBuilder(
                 builder: (BuildContext context, void Function(void Function()) setState) {
                   return Dialog(
-                    insetPadding: const EdgeInsets.all(16),
+                    insetPadding: const EdgeInsets.all(16).r,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     // child: ,
                     // title: Text(widget.categoryName),
@@ -359,7 +360,7 @@ class _ChampionshipInformationCardState extends State<ChampionshipInformationCar
         },
         child: Container(
           margin: const EdgeInsets.symmetric(vertical: 8),
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0).r,
           decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), border: const Border.fromBorderSide(BorderSide(color: Colors.orange, width: 1.5))),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -426,11 +427,14 @@ class _ChampionshipInformationCardState extends State<ChampionshipInformationCar
                 contentPadding: EdgeInsets.zero,
                 title: Text(
                   widget.champName,
-                  style: Theme.of(context).textTheme.titleLarge,
+                  style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w700),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ).animate().slideX(),
-                subtitle: Text(widget.categoryName).animate().slideY(),
+                subtitle: Text(
+                  widget.categoryName,
+                  style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w200),
+                ).animate().slideY(),
                 trailing: LayoutBuilder(
                   builder: (context, constraints) {
                     if (DateTime.parse(formattedStartDate.toString()).isAfter(DateTime.now())) {
@@ -537,6 +541,13 @@ class _ChampionshipInformationCardState extends State<ChampionshipInformationCar
                             )
                           ],
                         ),
+                        Wrap(
+                          spacing: 4.r,
+                          runSpacing: 4.r,
+                          children: [
+                            
+                          ]
+                        ),
                         const Divider(
                           height: 2,
                           color: Colors.transparent,
@@ -568,148 +579,151 @@ class _ChampionshipInformationCardState extends State<ChampionshipInformationCar
                           context,
                           PageRouteBuilder(
                             opaque: false,
-                            barrierColor: Theme.of(context).colorScheme.inverseSurface.withValues(alpha: 0.4),
+                            // barrierColor: Theme.of(context).colorScheme.inverseSurface.withValues(alpha: 0.4),
                             barrierDismissible: true,
                             fullscreenDialog: true,
                             pageBuilder: (context, animation, secondaryAnimation) {
-                              return Center(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(16.0),
-                                  child: DecoratedBox(
-                                    decoration: BoxDecoration(color: Theme.of(context).scaffoldBackgroundColor, borderRadius: BorderRadius.circular(10)),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              AutoSizeText(
-                                                "Teacher Details",
-                                                style: Theme.of(context).textTheme.titleLarge,
-                                              ),
-                                              IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close))
-                                            ],
-                                          ),
-                                          Hero(
-                                            tag: "${widget.teacherDetailsModel.teacherName}${widget.champId}${widget.modeName}",
-                                            child: CircleAvatar(
-                                              backgroundImage: CachedNetworkImageProvider(
-                                                widget.uploadImg == "" ? "https://i.pinimg.com/736x/c0/27/be/c027bec07c2dc08b9df60921dfd539bd.jpg" : widget.uploadImg,
-                                              ),
-                                              radius: MediaQuery.sizeOf(context).width * 0.14,
+                              return BackdropFilter(
+                                filter: ImageFilter.blur(sigmaY: 2, sigmaX: 2),
+                                child: Center(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16.0),
+                                    child: DecoratedBox(
+                                      decoration: BoxDecoration(color: Theme.of(context).scaffoldBackgroundColor, borderRadius: BorderRadius.circular(10)),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              children: [
+                                                AutoSizeText(
+                                                  "Teacher Details",
+                                                  style: Theme.of(context).textTheme.titleLarge,
+                                                ),
+                                                IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close))
+                                              ],
                                             ),
-                                          ),
-                                          const Divider(
-                                            color: Colors.transparent,
-                                          ),
-                                          Column(
-                                            crossAxisAlignment: CrossAxisAlignment.center,
-                                            children: [
-                                              Row(
-                                                mainAxisSize: MainAxisSize.min,
-                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                crossAxisAlignment: CrossAxisAlignment.center,
-                                                children: [
-                                                  AutoSizeText(
-                                                    widget.teacherDetailsModel.teacherName!,
-                                                    style: Theme.of(context).textTheme.titleLarge,
-                                                  ),
-                                                  const SizedBox(
-                                                    width: 4,
-                                                  ),
-                                                  Visibility(
-                                                    visible: widget.teacherDetailsModel.status == "1",
-                                                    child: Icon(
-                                                      Icons.verified,
-                                                      color: Theme.of(context).colorScheme.secondary,
-                                                      size: Theme.of(context).textTheme.titleMedium!.fontSize,
+                                            Hero(
+                                              tag: "${widget.teacherDetailsModel.teacherName}${widget.champId}${widget.modeName}",
+                                              child: CircleAvatar(
+                                                backgroundImage: CachedNetworkImageProvider(
+                                                  widget.uploadImg == "" ? "https://i.pinimg.com/736x/c0/27/be/c027bec07c2dc08b9df60921dfd539bd.jpg" : widget.uploadImg,
+                                                ),
+                                                radius: MediaQuery.sizeOf(context).width * 0.14,
+                                              ),
+                                            ),
+                                            const Divider(
+                                              color: Colors.transparent,
+                                            ),
+                                            Column(
+                                              crossAxisAlignment: CrossAxisAlignment.center,
+                                              children: [
+                                                Row(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                                  children: [
+                                                    AutoSizeText(
+                                                      widget.teacherDetailsModel.teacherName!,
+                                                      style: Theme.of(context).textTheme.titleLarge,
                                                     ),
-                                                  )
-                                                ],
-                                              ),
-                                              const Divider(
-                                                color: Colors.transparent,
-                                              ),
-                                              DecoratedBox(
-                                                decoration: BoxDecoration(color: Colors.grey.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
-                                                child: Padding(
-                                                  padding: const EdgeInsets.all(8.0),
-                                                  child: Column(
-                                                    mainAxisSize: MainAxisSize.min,
-                                                    children: [
-                                                      Row(
-                                                        // mainAxisAlignment : MainAxisAlignment.start,
-                                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                                        children: [
-                                                          Expanded(
-                                                              child: Column(
-                                                            mainAxisSize: MainAxisSize.max,
-                                                            mainAxisAlignment: MainAxisAlignment.start,
-                                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                                            children: [
-                                                              AutoSizeText(
-                                                                "Department",
-                                                                style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                                                              ),
-                                                              AutoSizeText(
-                                                                "${widget.teacherDetailsModel.department}",
-                                                                style: Theme.of(context).textTheme.titleMedium,
-                                                                maxLines: 2,
-                                                              )
-                                                            ],
-                                                          )),
-                                                          const VerticalDivider(),
-                                                          Expanded(
-                                                              child: Column(
-                                                            mainAxisAlignment: MainAxisAlignment.start,
-                                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                                            children: [
-                                                              AutoSizeText(
-                                                                "Institute",
-                                                                style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                                                              ),
-                                                              AutoSizeText(
-                                                                "${widget.teacherDetailsModel.institute}",
-                                                                style: Theme.of(context).textTheme.titleMedium,
-                                                              )
-                                                            ],
-                                                          ))
-                                                        ],
+                                                    const SizedBox(
+                                                      width: 4,
+                                                    ),
+                                                    Visibility(
+                                                      visible: widget.teacherDetailsModel.status == "1",
+                                                      child: Icon(
+                                                        Icons.verified,
+                                                        color: Theme.of(context).colorScheme.secondary,
+                                                        size: Theme.of(context).textTheme.titleMedium!.fontSize,
                                                       ),
-                                                      const Divider(
-                                                        color: Colors.transparent,
-                                                      ),
-                                                      Row(
-                                                        children: [
-                                                          Expanded(
-                                                              child: Column(
-                                                            mainAxisAlignment: MainAxisAlignment.start,
-                                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                                            children: [
-                                                              AutoSizeText(
-                                                                "Championships Created",
-                                                                style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                                                              ),
-                                                              AutoSizeText(
-                                                                widget.teacherDetailsModel.champsCreated ?? "0",
-                                                                style: Theme.of(context).textTheme.titleMedium,
-                                                              )
-                                                            ],
-                                                          )),
-                                                        ],
-                                                      ),
-                                                    ],
+                                                    )
+                                                  ],
+                                                ),
+                                                const Divider(
+                                                  color: Colors.transparent,
+                                                ),
+                                                DecoratedBox(
+                                                  decoration: BoxDecoration(color: Colors.grey.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
+                                                  child: Padding(
+                                                    padding: const EdgeInsets.all(8.0),
+                                                    child: Column(
+                                                      mainAxisSize: MainAxisSize.min,
+                                                      children: [
+                                                        Row(
+                                                          // mainAxisAlignment : MainAxisAlignment.start,
+                                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                                          children: [
+                                                            Expanded(
+                                                                child: Column(
+                                                              mainAxisSize: MainAxisSize.max,
+                                                              mainAxisAlignment: MainAxisAlignment.start,
+                                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                                              children: [
+                                                                AutoSizeText(
+                                                                  "Department",
+                                                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                                                                ),
+                                                                AutoSizeText(
+                                                                  "${widget.teacherDetailsModel.department}",
+                                                                  style: Theme.of(context).textTheme.titleMedium,
+                                                                  maxLines: 2,
+                                                                )
+                                                              ],
+                                                            )),
+                                                            const VerticalDivider(),
+                                                            Expanded(
+                                                                child: Column(
+                                                              mainAxisAlignment: MainAxisAlignment.start,
+                                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                                              children: [
+                                                                AutoSizeText(
+                                                                  "Institute",
+                                                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                                                                ),
+                                                                AutoSizeText(
+                                                                  "${widget.teacherDetailsModel.institute}",
+                                                                  style: Theme.of(context).textTheme.titleMedium,
+                                                                )
+                                                              ],
+                                                            ))
+                                                          ],
+                                                        ),
+                                                        const Divider(
+                                                          color: Colors.transparent,
+                                                        ),
+                                                        Row(
+                                                          children: [
+                                                            Expanded(
+                                                                child: Column(
+                                                              mainAxisAlignment: MainAxisAlignment.start,
+                                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                                              children: [
+                                                                AutoSizeText(
+                                                                  "Championships Created",
+                                                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                                                                ),
+                                                                AutoSizeText(
+                                                                  widget.teacherDetailsModel.champsCreated ?? "0",
+                                                                  style: Theme.of(context).textTheme.titleMedium,
+                                                                )
+                                                              ],
+                                                            )),
+                                                          ],
+                                                        ),
+                                                      ],
+                                                    ),
                                                   ),
                                                 ),
-                                              ),
-                                            ],
-                                          ),
-                                          const Divider(
-                                            color: Colors.transparent,
-                                          ),
-                                        ],
+                                              ],
+                                            ),
+                                            const Divider(
+                                              color: Colors.transparent,
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),

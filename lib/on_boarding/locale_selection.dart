@@ -16,12 +16,12 @@ class LocaleSelection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Map<String,String> locales = {
-      "en" : "English",
-      "hi" : "हिन्दी",
-      "da" : "Dansk",
-      "de" : "Deutsch",
-      "sv" : "Svenska",
+    Map<String, String> locales = {
+      "en": "English",
+      "hi": "हिन्दी",
+      "da": "Dansk",
+      "de": "Deutsch",
+      "sv": "Svenska",
     };
 
     final localeCubit = LocaleSelectionCubit();
@@ -33,7 +33,8 @@ class LocaleSelection extends StatelessWidget {
               // crossAxisAlignment: CrossAxisAlignment.stretch,
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                SizedBox(height: kToolbarHeight,
+                SizedBox(
+                  height: kToolbarHeight,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
@@ -42,7 +43,12 @@ class LocaleSelection extends StatelessWidget {
                           return Switch.adaptive(
                             dragStartBehavior: DragStartBehavior.start,
                             trackOutlineWidth: const WidgetStatePropertyAll(0.3),
-                            thumbIcon: WidgetStatePropertyAll(state == ThemeMode.dark ? const Icon(CupertinoIcons.moon,color: Colors.white,) : const Icon(CupertinoIcons.sun_min)),
+                            thumbIcon: WidgetStatePropertyAll(state == ThemeMode.dark
+                                ? const Icon(
+                                    CupertinoIcons.moon,
+                                    color: Colors.white,
+                                  )
+                                : const Icon(CupertinoIcons.sun_min)),
                             value: state == ThemeMode.dark,
                             onChanged: (value) {
                               if (value) {
@@ -57,49 +63,51 @@ class LocaleSelection extends StatelessWidget {
                     ],
                   ),
                 ),
-                Text(S.of(context).chooseLanguage,textAlign: TextAlign.center,style: TextStyle(
-                  fontSize: 20.sp
-                ),),
-                const SizedBox(height: kToolbarHeight,),
+                Text(
+                  S.of(context).chooseLanguage,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 20.sp),
+                ),
+                const SizedBox(
+                  height: kToolbarHeight,
+                ),
                 Expanded(
                   child: GridView.builder(
                     shrinkWrap: true,
                     padding: const EdgeInsets.all(16),
                     itemCount: locales.length,
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      mainAxisSpacing: 8.r,
-                      crossAxisSpacing: 8.r
-                    ),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, mainAxisSpacing: 8.r, crossAxisSpacing: 8.r),
                     itemBuilder: (context, index) {
-                    return ClipRect(
-                      child: InkWell(
-                        onTap: () async {
-                          // context.read<LocaleSelectionCubit>().updateLocaleOnStartup(locales.keys.elementAt(index));
-                          await Hive.box(userDataDB).put("isLocaleSet",true).whenComplete(() {
-                            localeCubit.updateLocaleOnStartup(locales.keys.elementAt(index));
-                          },);
-                        },
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            SvgPicture(AssetBytesLoader('assets/flags/${locales.keys.elementAt(index)}.svg.vec'),height: 48.r,
-                              // ,height: 64,width: 64,
-                            ),
-                            // const SizedBox(
-                            //   height: 4,
-                            // ),
-                            Text(locales.values.elementAt(index))
-                          ],
+                      return ClipRect(
+                        child: InkWell(
+                          onTap: () async {
+                            // context.read<LocaleSelectionCubit>().updateLocaleOnStartup(locales.keys.elementAt(index));
+                            await Hive.box(userDataDB).put("isLocaleSet", true).whenComplete(
+                              () {
+                                localeCubit.updateLocaleOnStartup(locales.keys.elementAt(index));
+                              },
+                            );
+                          },
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SvgPicture(
+                                AssetBytesLoader('assets/flags/${locales.keys.elementAt(index)}.svg.vec'), height: 48.r,
+                                // ,height: 64,width: 64,
+                              ),
+                              // const SizedBox(
+                              //   height: 4,
+                              // ),
+                              Text(locales.values.elementAt(index))
+                            ],
+                          ),
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
                   ),
                 ),
               ],
-            )
-        ),
+            )),
       ),
     );
   }

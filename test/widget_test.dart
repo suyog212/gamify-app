@@ -7,24 +7,21 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:kGamify/main.dart';
 import 'package:path_provider/path_provider.dart';
 
 void main() {
-  testWidgets("App execution time", (widgetTester) async {
-    HydratedBloc.storage = await HydratedStorage.build(
-      storageDirectory: kIsWeb
-          ? HydratedStorage.webStorageDirectory
-          : await getApplicationDocumentsDirectory(),
-    );
-    final stopwatch = Stopwatch()..start();
-    await widgetTester.pumpWidget(const MyApp());
-    // print('UI rendering time: ${stopwatch.elapsedMilliseconds} ms');
-    expect(stopwatch.elapsedMilliseconds, lessThan(500));
-  },);
+  testWidgets(
+    "App execution time",
+    (widgetTester) async {
+      HydratedBloc.storage = await HydratedStorage.build(storageDirectory: kIsWeb ? HydratedStorageDirectory.web : HydratedStorageDirectory((await getTemporaryDirectory()).path));
+      final stopwatch = Stopwatch()..start();
+      await widgetTester.pumpWidget(const MyApp());
+      // print('UI rendering time: ${stopwatch.elapsedMilliseconds} ms');
+      expect(stopwatch.elapsedMilliseconds, lessThan(500));
+    },
+  );
   // testWidgets('Counter increments smoke test', (WidgetTester tester) async {
   //   // Build our app and trigger a frame.
   //   await tester.pumpWidget(const MyApp());

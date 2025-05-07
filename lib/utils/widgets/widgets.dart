@@ -20,6 +20,9 @@ class AppTextField extends StatelessWidget {
   final TextInputType? keyBoardType;
   final bool? isEnabled;
   final bool? isRequired;
+  final int? maxLength;
+  final String? prefixText;
+  final void Function(String)? onChange;
   const AppTextField(
       {super.key,
       required this.hintText,
@@ -31,7 +34,10 @@ class AppTextField extends StatelessWidget {
       required this.keyBoardType,
       this.label,
       this.isEnabled,
-      this.isRequired});
+      this.isRequired,
+      this.maxLength,
+      this.prefixText,
+      this.onChange});
 
   @override
   Widget build(BuildContext context) {
@@ -41,14 +47,17 @@ class AppTextField extends StatelessWidget {
       onTapOutside: (event) {
         FocusManager.instance.primaryFocus!.unfocus();
       },
+      onChanged: onChange,
       enabled: isEnabled,
       obscureText: isPass,
       keyboardType: keyBoardType,
+      maxLength: maxLength,
       decoration: InputDecoration(
-          fillColor: Theme.of(context).colorScheme.inverseSurface.withOpacity(0.07),
+          fillColor: Theme.of(context).colorScheme.inverseSurface.withValues(alpha: .07),
           border: OutlineInputBorder(borderSide: const BorderSide(color: Colors.transparent), borderRadius: BorderRadius.circular(10)),
           hintText: hintText,
           prefix: prefix,
+          prefixText: prefixText,
           suffixIcon: suffix,
           label: RichText(
               text: TextSpan(text: hintText, style: TextStyle(color: Theme.of(context).colorScheme.inverseSurface), children: [
@@ -59,7 +68,7 @@ class AppTextField extends StatelessWidget {
                 ))
           ])),
           filled: true,
-          hintStyle: TextStyle(color: Theme.of(context).colorScheme.inverseSurface.withOpacity(0.4)),
+          hintStyle: TextStyle(color: Theme.of(context).colorScheme.inverseSurface.withValues(alpha: .4)),
           disabledBorder: OutlineInputBorder(borderSide: const BorderSide(color: Colors.transparent), borderRadius: BorderRadius.circular(10)),
           focusedBorder: OutlineInputBorder(borderSide: const BorderSide(color: Colors.transparent), borderRadius: BorderRadius.circular(10)),
           enabledBorder: OutlineInputBorder(borderSide: const BorderSide(color: Colors.transparent), borderRadius: BorderRadius.circular(10))),
@@ -123,7 +132,7 @@ navigateToChampAnalytics(BuildContext context, String champId, String modeId) {
             "CategoryId": curr.first.categoryId,
             "VisitedOn": DateTime.now().toString(),
             "GameMode": curr.first.modeName,
-            "VisitedFrom": AppRouter().router?.state!.name
+            "VisitedFrom": AppRouter().router?.state.name
           });
         } on DioException catch (e) {
           context.pop();

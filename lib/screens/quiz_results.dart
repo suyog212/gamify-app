@@ -27,7 +27,6 @@ class QuizResult extends StatefulWidget {
 }
 
 class _QuizResultState extends State<QuizResult> {
-
   bool isAdLoaded = false;
 
   @override
@@ -41,16 +40,14 @@ class _QuizResultState extends State<QuizResult> {
     return Scaffold(
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.only(right: 16.r,left: 16.r,bottom: 16.r),
+          padding: EdgeInsets.only(right: 16.r, left: 16.r, bottom: 16.r),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               FutureBuilder(
-                future: BannerAdRepository()
-                    .getChampionshipBannerAds(widget.champId),
+                future: BannerAdRepository().getChampionshipBannerAds(widget.champId),
                 builder: (context, snapshot) {
-                  if (snapshot.connectionState ==
-                      ConnectionState.waiting) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Skeletonizer(
                       enabled: true,
                       child: SizedBox(),
@@ -60,13 +57,9 @@ class _QuizResultState extends State<QuizResult> {
                     return CarouselSlider.builder(
                         itemCount: snapshot.data!.length,
                         itemBuilder: (context, index, realIndex) {
-                          return Image.network(snapshot.data!
-                              .elementAt(index)['ad_image']);
+                          return Image.network(snapshot.data!.elementAt(index)['ad_image']);
                         },
-                        options: CarouselOptions(
-                            autoPlay: true,
-                            height: kToolbarHeight.r,
-                            viewportFraction: 1.0));
+                        options: CarouselOptions(autoPlay: true, height: kToolbarHeight.r, viewportFraction: 1.0));
                   }
                   return const SizedBox(
                     child: Text("Ad"),
@@ -81,107 +74,118 @@ class _QuizResultState extends State<QuizResult> {
                 ),
               ),
               // Spacer(),
-              AutoSizeText("Your Score",style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18.r
-              ),textAlign: TextAlign.center,),
-              AutoSizeText("${widget.solvedQuestions}/${widget.totalQuestions}",textAlign: TextAlign.center,style: TextStyle(
-                  fontSize: 32.r,
-                  color: Theme.of(context).colorScheme.secondary,
-                  fontWeight: FontWeight.w900
-              ),),
+              AutoSizeText(
+                "Your Score",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.r),
+                textAlign: TextAlign.center,
+              ),
+              AutoSizeText(
+                "${widget.solvedQuestions}/${widget.totalQuestions}",
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 32.r, color: Theme.of(context).colorScheme.secondary, fontWeight: FontWeight.w900),
+              ),
               Visibility(
                   visible: widget.wrongQuestions != 0,
-                  child: AutoSizeText("${widget.wrongQuestions} questions marked as wrong",textAlign: TextAlign.center,style: TextStyle(
-                    fontSize: 14.r
-                  ),)),
-              AutoSizeText(getQuote(messages, widget.solvedQuestions/widget.totalQuestions).first,textAlign: TextAlign.center,style: TextStyle(
-                  fontSize: 24.r,
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.secondary
-              ),),
-              AutoSizeText(getQuote(messages, widget.solvedQuestions/widget.totalQuestions).last,textAlign: TextAlign.center,style: TextStyle(
-                fontSize: 16.r
-              ),),
-              const Divider(color: Colors.transparent,),
+                  child: AutoSizeText(
+                    "${widget.wrongQuestions} questions marked as wrong",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 14.r),
+                  )),
+              AutoSizeText(
+                getQuote(messages, widget.solvedQuestions / widget.totalQuestions).first,
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 24.r, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary),
+              ),
+              AutoSizeText(
+                getQuote(messages, widget.solvedQuestions / widget.totalQuestions).last,
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16.r),
+              ),
+              const Divider(
+                color: Colors.transparent,
+              ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   DecoratedBox(
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(6),
-                        color: Theme.of(context).colorScheme.secondary.withOpacity( 0.4)
-                    ),
+                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(6), color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.4)),
                     child: Padding(
                       padding: EdgeInsets.all(4.r),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.monetization_on_outlined,size: 14.r,),
-                          const VerticalDivider(width: 4,),
-                          Text("${widget.score.toStringAsFixed(3)} Coins",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 14.r),)
+                          Icon(
+                            Icons.monetization_on_outlined,
+                            size: 14.r,
+                          ),
+                          const VerticalDivider(
+                            width: 4,
+                          ),
+                          Text(
+                            "${widget.score.toStringAsFixed(3)} Coins",
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14.r),
+                          )
                         ],
                       ),
                     ),
                   ),
                 ],
               ),
-              const Divider(color: Colors.transparent,),
+              const Divider(
+                color: Colors.transparent,
+              ),
               // const Spacer(),
               _navigateToChampAnalytics(context, widget.champId.toString(), widget.modeId.toString()),
               // const Divider(color: Colors.transparent,),
-              FilledButton(onPressed: () {
-                context.go("/landingPage");
-              }, child: const Text("Explore championships"))
+              FilledButton(
+                  onPressed: () {
+                    context.go("/landingPage");
+                  },
+                  child: const Text("Explore championships"))
             ],
           ),
         ),
       ),
     );
   }
+
   _navigateToChampAnalytics(BuildContext context, String champId, String modeId) {
-    return OutlinedButton(onPressed:
-        () async {
-      try {
-        showDialog(
-          barrierDismissible: false,
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              shape: RoundedRectangleBorder(
-                  borderRadius:
-                  BorderRadius.circular(10)),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment:
-                CrossAxisAlignment.center,
-                children: [
-                  const CircularProgressIndicator(),
-                  const Divider(
-                    color: Colors.transparent,
+    return OutlinedButton(
+        onPressed: () async {
+          try {
+            showDialog(
+              barrierDismissible: false,
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const CircularProgressIndicator(),
+                      const Divider(
+                        color: Colors.transparent,
+                      ),
+                      Text(
+                        "Loading...",
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    ],
                   ),
-                  Text(
-                    "Loading...",
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium,
-                  ),
-                ],
-              ),
+                );
+              },
             );
-          },
-        );
-        List<ChampionshipAnalytics> analytics = await ChampionshipAnalyticsCubit().analyticsNavigator();
-        List<dynamic> data =
-        await ChampionshipAnalyticsRepository()
-            .getQuestionAnalytics(
-            int.parse(champId));
-        List<ChampionshipAnalytics> curr = analytics.where((element) => element.modeId == modeId,).toList();
-        if (!context.mounted) return;
-        Navigator.pop(context);
-        context.go(
-            "/landingPage/quizAnalytics",
-            extra: {
+            List<ChampionshipAnalytics> analytics = await ChampionshipAnalyticsCubit().analyticsNavigator();
+            List<dynamic> data = await ChampionshipAnalyticsRepository().getQuestionAnalytics(int.parse(champId));
+            List<ChampionshipAnalytics> curr = analytics
+                .where(
+                  (element) => element.modeId == modeId,
+                )
+                .toList();
+            if (!context.mounted) return;
+            Navigator.pop(context);
+            context.go("/landingPage/quizAnalytics", extra: {
               "data": data,
               "category_name": curr.first.categoryName,
               "champ_name": curr.first.champName,
@@ -191,22 +195,23 @@ class _QuizResultState extends State<QuizResult> {
               'gift_type': curr.first.giftType ?? "",
               'gift_image': curr.first.giftImage ?? "",
               'gift_name': curr.first.giftName ?? "",
-              'mode_name' : curr.first.modeName,
-              'end_time' : "${curr.first.endDate} ${curr.first.endTime}"
+              'mode_name': curr.first.modeName,
+              'end_time': "${curr.first.endDate} ${curr.first.endTime}"
             });
-        mixpanel!.track("VisitedLeaderboard",properties: {
-          "UserId": Hive.box(userDataDB).get("personalInfo")['user_id'],
-          "UserKey": Hive.box(userDataDB).get("personalInfo")['user_key'],
-          "ChampionshipId": int.parse(curr.first.champId!),
-          "CategoryId": curr.first.categoryId,
-          "VisitedOn": DateTime.now().toString(),
-          "GameMode": curr.first.modeName,
-          "VisitedFrom": "ChampionshipResult"
-        });
-      } on DioException catch (e) {
-        context.pop();
-        snackBarKey.currentState?.showSnackBar(SnackBar(content: Text(errorStrings(e.type))));
-      }
-    }, child: const Text("View Analytics"));
+            mixpanel!.track("VisitedLeaderboard", properties: {
+              "UserId": Hive.box(userDataDB).get("personalInfo")['user_id'],
+              "UserKey": Hive.box(userDataDB).get("personalInfo")['user_key'],
+              "ChampionshipId": int.parse(curr.first.champId!),
+              "CategoryId": curr.first.categoryId,
+              "VisitedOn": DateTime.now().toString(),
+              "GameMode": curr.first.modeName,
+              "VisitedFrom": "ChampionshipResult"
+            });
+          } on DioException catch (e) {
+            context.pop();
+            snackBarKey.currentState?.showSnackBar(SnackBar(content: Text(errorStrings(e.type))));
+          }
+        },
+        child: const Text("View Analytics"));
   }
 }

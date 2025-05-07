@@ -36,8 +36,10 @@ class AuthHandler {
       return response.data;
     } on DioException catch (e) {
       // print(e.response!.statusCode);
-      if (e.response != null && e.response?.statusCode == 469) {
+      if (e.response != null && e.response?.statusCode == 404) {
         throw ("Are you trying to enter a secret level? Because that email doesn’t exist in our system!");
+      } else if (e.response?.statusCode == 401) {
+        throw ('Password fail! Did you let your cat walk on the keyboard again?');
       } else {
         throw ("Our servers are currently unavailable. We’re working to resolve the issue. Please try again later.");
       }

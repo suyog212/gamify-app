@@ -1,4 +1,3 @@
-import 'package:dice_bear/dice_bear.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +14,7 @@ class AppDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Avatar _avatar = DiceBearBuilder(seed: "Nupur", sprite: DiceBearSprite.avataaarsNeutral).build();
+    // Avatar _avatar = DiceBearBuilder(seed: "Mihir", sprite: DiceBearSprite.n).build();
     return Drawer(
       child: Column(
         children: [
@@ -29,14 +28,23 @@ class AppDrawer extends StatelessWidget {
                       backgroundImage: MemoryImage(state.image),
                     );
                   }
-                  // return CircleAvatar(child: ClipRRect(borderRadius: BorderRadius.circular(100.r), child: _avatar.toImage()));
+                  // return CircleAvatar(child: ClipRRect(borderRadius: BorderRadius.circular(100.r), child: _avatar.toImage(fit: BoxFit.cover)));
+                  // return CircleAvatar(
+                  //   backgroundImage: CachedNetworkImageProvider(
+                  //     "https://api.dicebear.com/9.x/notionists-neutral/png?seed=${Uri.encodeComponent(Hive.box(userDataDB).get("personalInfo")["name"] ?? "Suyog")}",
+                  //   ),
+                  //   // child: Image.network("https://api.dicebear.com/9.x/notionists-neutral/png?seed=john"),
+                  // );
                   return const CircleAvatar();
                 },
               ),
             ),
             // accountName: const Text("Suyog"), accountEmail: const Text("suyog.22220300@viit.ac.in"),
-            accountName: Text(Hive.box(userDataDB).get("personalInfo")["name"] ?? ""),
-            accountEmail: Text(Hive.box(userDataDB).get("personalInfo")["email"]),
+            accountName: Text(
+              Hive.box(userDataDB).get("personalInfo")["name"].toString().toUpperCase() ?? "",
+              style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+            ),
+            accountEmail: Text(Hive.box(userDataDB).get("personalInfo")["email"], style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600)),
           ),
           ListTile(
             leading: const Icon(CupertinoIcons.person),
@@ -52,6 +60,14 @@ class AppDrawer extends StatelessWidget {
               context.go("/landingPage/analytics");
             },
           ),
+          if (kDebugMode)
+            ListTile(
+              leading: const Icon(CupertinoIcons.person),
+              title: const Text("Phone Verification"),
+              onTap: () {
+                context.go(("/authentication/otpVerification"), extra: {"phone": "7249379181", "name": "Suyog", "email": "abc@gmail.com", "password": "Suyog@123", "qualification": "School"});
+              },
+            ),
           if (kDebugMode)
             ListTile(
               leading: const Icon(Icons.book),
@@ -100,23 +116,6 @@ class AppDrawer extends StatelessWidget {
             title: const Text("Settings"),
             onTap: () {
               context.go("/landingPage/settings");
-            },
-          ),
-          const Spacer(),
-          ListTile(
-            trailing: const Icon(Icons.logout),
-            title: Text(S.current.logOut),
-            onTap: () async {
-              mixpanel!.track('UserLogOut', properties: {"user_id": Hive.box(userDataDB).get("personalInfo")['user_id'], "timeStamp": DateTime.now().toString()});
-              mixpanel!.reset();
-              await Hive.box(userDataDB).clear();
-              await Hive.box(quizDataDB).clear();
-              await Hive.box(qualificationDataDB).clear().whenComplete(
-                () {
-                  if (!context.mounted) return;
-                  context.go("/");
-                },
-              );
             },
           ),
           // if (kDebugMode)

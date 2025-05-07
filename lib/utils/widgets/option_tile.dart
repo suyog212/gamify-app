@@ -18,8 +18,7 @@ class OptionTile extends StatefulWidget {
 }
 
 class _OptionTileState extends State<OptionTile> {
-  RegExp regExp = RegExp(
-      r'((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube\.com|youtu.be))(\/(?:[\w\-]+\?v=|embed\/|v\/)?)([\w\-]+)(\S+)?');
+  RegExp regExp = RegExp(r'((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube\.com|youtu.be))(\/(?:[\w\-]+\?v=|embed\/|v\/)?)([\w\-]+)(\S+)?');
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -31,59 +30,66 @@ class _OptionTileState extends State<OptionTile> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               AutoSizeText(widget.optionNo!),
-              if(widget.optionText != null || widget.optionText != "") Expanded(
-                child: HtmlWidget(widget.optionText!,textStyle: TextStyle(
-                  fontSize: 14.sp,
+              if (widget.optionText != null || widget.optionText != "")
+                Expanded(
+                  child: HtmlWidget(
+                    widget.optionText!,
+                    textStyle: TextStyle(
+                      fontSize: 14.sp,
+                    ),
+                  ),
                 ),
-                ),
-              ),
             ],
           ),
-          FutureBuilder(future: mediaWidget(widget.optionImg ?? ""), builder: (context, snapshot) {
-            if(snapshot.connectionState == ConnectionState.waiting){
-              return const Center(child: CircularProgressIndicator(),);
-            }
-            if (snapshot.hasData)
-            {
-              return snapshot.data!;
-            }
-            return const SizedBox();
-          },)
+          FutureBuilder(
+            future: mediaWidget(widget.optionImg ?? ""),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+              if (snapshot.hasData) {
+                return snapshot.data!;
+              }
+              return const SizedBox();
+            },
+          )
           // if(widget.optionImg != null || widget.optionImg!.isEmpty || !Uri.tryParse(widget.optionImg!)!.isAbsolute)
           //   mediaWidget(widget.optionImg!)
-            // InkWell(
-            // onTap: () {
-            //   Navigator.push(context, PageRouteBuilder(
-            //     pageBuilder: (context, animation, secondaryAnimation) {
-            //     return Scaffold(
-            //       appBar: AppBar(
-            //         backgroundColor: Colors.transparent,
-            //         leading: IconButton(onPressed: () {
-            //           Navigator.pop(context);
-            //         }, icon: Icon(Icons.arrow_back,color: Theme.of(context).colorScheme.surface,)),
-            //       ),
-            //       extendBodyBehindAppBar: true,
-            //       body: PhotoView(
-            //         imageProvider: NetworkImage(widget.optionImg!),
-            //       ),
-            //     );
-            //   },));
-            // },
-            //   child: Image.network(widget.optionImg!,height: kToolbarHeight * 1.5,)),
+          // InkWell(
+          // onTap: () {
+          //   Navigator.push(context, PageRouteBuilder(
+          //     pageBuilder: (context, animation, secondaryAnimation) {
+          //     return Scaffold(
+          //       appBar: AppBar(
+          //         backgroundColor: Colors.transparent,
+          //         leading: IconButton(onPressed: () {
+          //           Navigator.pop(context);
+          //         }, icon: Icon(Icons.arrow_back,color: Theme.of(context).colorScheme.surface,)),
+          //       ),
+          //       extendBodyBehindAppBar: true,
+          //       body: PhotoView(
+          //         imageProvider: NetworkImage(widget.optionImg!),
+          //       ),
+          //     );
+          //   },));
+          // },
+          //   child: Image.network(widget.optionImg!,height: kToolbarHeight * 1.5,)),
         ],
       ),
     );
   }
 
   Future<Widget> mediaWidget(String link) async {
-    if(Uri.tryParse(link) == null || !Uri.tryParse(link)!.isAbsolute || link.isEmpty){
+    if (Uri.tryParse(link) == null || !Uri.tryParse(link)!.isAbsolute || link.isEmpty) {
       return const SizedBox();
     }
-    if(regExp.hasMatch(link)){
+    if (regExp.hasMatch(link)) {
       String url = parse(link).getElementsByTagName("a").first.text;
       return QuestionYoutubeVideoPlayer(id: url);
     } else {
-      if(await UrlTypeHelper.getType(link) == UrlType.image){
+      if (await UrlTypeHelper.getType(link) == UrlType.image) {
         return InkWell(
             onTap: () {
               Navigator.push(context, PageRouteBuilder(
@@ -91,18 +97,27 @@ class _OptionTileState extends State<OptionTile> {
                   return Scaffold(
                     appBar: AppBar(
                       backgroundColor: Colors.transparent,
-                      leading: IconButton(onPressed: () {
-                        Navigator.pop(context);
-                      }, icon: Icon(Icons.arrow_back,color: Theme.of(context).colorScheme.surface,)),
+                      leading: IconButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          icon: Icon(
+                            Icons.arrow_back,
+                            color: Theme.of(context).colorScheme.surface,
+                          )),
                     ),
                     extendBodyBehindAppBar: true,
                     body: PhotoView(
                       imageProvider: NetworkImage(link),
                     ),
                   );
-                },));
+                },
+              ));
             },
-            child: Image.network(link,height: kToolbarHeight * 3.5,));
+            child: Image.network(
+              link,
+              height: kToolbarHeight * 3.5,
+            ));
       }
       return QuestionVideo(questionLink: link);
     }

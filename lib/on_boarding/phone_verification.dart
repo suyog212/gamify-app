@@ -8,6 +8,7 @@ import 'package:kGamify/on_boarding/utils/otp_cubit.dart';
 import 'package:kGamify/utils/constants.dart';
 import 'package:kGamify/utils/widgets/otp_timer.dart';
 import 'package:pinput/pinput.dart';
+import 'package:sms_autofill/sms_autofill.dart';
 
 class PhoneVerification extends StatefulWidget {
   final String phone;
@@ -21,14 +22,43 @@ class PhoneVerification extends StatefulWidget {
   State<PhoneVerification> createState() => _PhoneVerificationState();
 }
 
-class _PhoneVerificationState extends State<PhoneVerification> {
+class _PhoneVerificationState extends State<PhoneVerification> with CodeAutoFill {
   @override
-  void didChangeDependencies() {
-    context.read<OTPVerificationCubit>().sendOtpWithTemplate(phoneNumber: widget.phone, otp: generateOtp(), context: context);
+  void didChangeDependencies() async {
+    context.read<OTPVerificationCubit>().sendOtpWithTemplate(phoneNumber: widget.phone, otp: generateOtp(), context: context, appSignature: await SmsAutoFill().getAppSignature);
     super.didChangeDependencies();
   }
 
+  String? appSignature;
+  String? otpCode;
+
+  @override
+  void codeUpdated() {
+    setState(() {
+      _otpController.text = code!;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    listenForCode();
+
+    SmsAutoFill().getAppSignature.then((signature) {
+      setState(() {
+        appSignature = signature;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    cancel();
+  }
+
   final OtpTimerController _otpTimerController = OtpTimerController();
+  final TextEditingController _otpController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -61,6 +91,7 @@ class _PhoneVerificationState extends State<PhoneVerification> {
                 return Pinput(
                   enabled: !state.isVerified,
                   closeKeyboardWhenCompleted: true,
+                  controller: _otpController,
                   onCompleted: (value) {
                     context.read<OtpCubit>().verifyOtp(value);
                   },
@@ -74,10 +105,7 @@ class _PhoneVerificationState extends State<PhoneVerification> {
                   defaultPinTheme: PinTheme(
                     width: 48.r,
                     height: 52.r,
-                    textStyle: GoogleFonts.poppins(
-                      fontSize: 20,
-                      color: const Color.fromRGBO(70, 69, 66, 1),
-                    ),
+                    textStyle: GoogleFonts.poppins(fontSize: 20, color: Theme.of(context).colorScheme.inverseSurface),
                     decoration: BoxDecoration(
                       color: const Color.fromRGBO(232, 235, 241, 0.37),
                       borderRadius: BorderRadius.circular(24),
@@ -91,7 +119,7 @@ class _PhoneVerificationState extends State<PhoneVerification> {
                 return TextButton(
                     onPressed: state.isExpired
                         ? () {
-                            context.read<OTPVerificationCubit>().sendOtpWithTemplate(phoneNumber: widget.phone, otp: generateOtp(), context: context).whenComplete(
+                            context.read<OTPVerificationCubit>().sendOtpWithTemplate(phoneNumber: widget.phone, otp: generateOtp(), context: context, appSignature: appSignature ?? "").whenComplete(
                               () {
                                 _otpTimerController.reset();
                               },

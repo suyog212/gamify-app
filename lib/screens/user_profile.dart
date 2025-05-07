@@ -3,19 +3,19 @@ import 'dart:io';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:csc_picker/csc_picker.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flextras/flextras.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:kGamify/blocs/user_image_bloc.dart';
 import 'package:kGamify/generated/l10n.dart';
-import 'package:kGamify/on_boarding/utils/auth_handler.dart';
 import 'package:kGamify/utils/constants.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class UserProfile extends StatefulWidget {
   const UserProfile({super.key});
@@ -109,39 +109,43 @@ class _UserProfileState extends State<UserProfile> {
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16).r,
         children: [
           Container(
             // padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
                 // color: Colors.grey.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(10)),
+                borderRadius: BorderRadius.circular(12).r),
             child: Row(
               children: [
                 Padding(
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(8).r,
                   child: InkWell(
                     onTap: () => showModalBottomSheet(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      showDragHandle: true,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(12).r)),
                       builder: (context) {
-                        return Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (Hive.box(userDataDB).get("UserImage", defaultValue: null) != null)
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0).r,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (Hive.box(userDataDB).get("UserImage", defaultValue: null) != null)
+                                ListTile(
+                                  leading: const Icon(Icons.delete),
+                                  title: const Text("Remove picture"),
+                                  onTap: () => context.read<UserDataBloc>().removeImage(),
+                                ),
                               ListTile(
-                                leading: const Icon(Icons.delete),
-                                title: const Text("Remove picture"),
-                                onTap: () => context.read<UserDataBloc>().removeImage(),
+                                leading: const Icon(Icons.edit),
+                                title: Hive.box(userDataDB).get("UserImage", defaultValue: null) != null ? const Text("Change picture") : const Text("Add profile picture"),
+                                onTap: () => context.read<UserDataBloc>().updateImage(),
                               ),
-                            ListTile(
-                              leading: const Icon(Icons.edit),
-                              title: Hive.box(userDataDB).get("UserImage", defaultValue: null) != null ? const Text("Change picture") : const Text("Add profile picture"),
-                              onTap: () => context.read<UserDataBloc>().updateImage(),
-                            ),
-                            const Divider(
-                              color: Colors.transparent,
-                            )
-                          ],
+                              const Divider(
+                                color: Colors.transparent,
+                              )
+                            ],
+                          ),
                         );
                       },
                       context: context,
@@ -156,6 +160,13 @@ class _UserProfileState extends State<UserProfile> {
                               backgroundImage: MemoryImage(state.image),
                             );
                           }
+                          // return CircleAvatar(
+                          //   radius: 48.r,
+                          //   backgroundImage: CachedNetworkImageProvider(
+                          //     "https://api.dicebear.com/9.x/notionists-neutral/png?seed=${Uri.encodeComponent(Hive.box(userDataDB).get("personalInfo")["name"] ?? "Suyog")}",
+                          //   ),
+                          //   // child: Image.network("https://api.dicebear.com/9.x/notionists-neutral/png?seed=john"),
+                          // );
                           return CircleAvatar(radius: 48.r, child: const Icon(CupertinoIcons.camera));
                         },
                       ),
@@ -183,15 +194,194 @@ class _UserProfileState extends State<UserProfile> {
           const Divider(
             color: Colors.transparent,
           ),
-          Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: Colors.grey.withOpacity(0.1), borderRadius: BorderRadius.circular(10)), child: _personalInfo(context)),
+          Container(padding: const EdgeInsets.all(12).r, decoration: BoxDecoration(color: Colors.grey.withValues(alpha: .1), borderRadius: BorderRadius.circular(10)), child: _personalInfo(context)),
+          // const Divider(
+          //   color: Colors.transparent,
+          // ),
+          // Container(padding: const EdgeInsets.all(12).r, decoration: BoxDecoration(color: Colors.grey.withValues(alpha: .1), borderRadius: BorderRadius.circular(10)), child: _educationInfo()),
           const Divider(
             color: Colors.transparent,
           ),
-          Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: Colors.grey.withOpacity(0.1), borderRadius: BorderRadius.circular(10)), child: _educationInfo()),
+          Container(padding: const EdgeInsets.all(12).r, decoration: BoxDecoration(color: Colors.grey.withValues(alpha: .1), borderRadius: BorderRadius.circular(10)), child: _interestsInfo()),
           const Divider(
             color: Colors.transparent,
           ),
-          Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: Colors.grey.withOpacity(0.1), borderRadius: BorderRadius.circular(10)), child: _interestsInfo())
+          Container(
+              padding: const EdgeInsets.all(12).r,
+              decoration: BoxDecoration(color: Colors.grey.withValues(alpha: .1), borderRadius: BorderRadius.circular(10)),
+              child: SeparatedColumn(
+                separatorBuilder: () => SizedBox(
+                  height: 12.r,
+                ),
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  AutoSizeText(
+                    "Manage Account",
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  InkWell(
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return Dialog(
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12).r),
+                            insetPadding: EdgeInsets.all(24).r,
+                            child: Padding(
+                              padding: const EdgeInsets.all(12.0).r,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.warning_amber_rounded,
+                                    size: 96.r,
+                                    color: Theme.of(context).colorScheme.error,
+                                  ),
+                                  Divider(
+                                    color: Colors.transparent,
+                                  ),
+                                  Text(
+                                    "Are you sure you want to log out?",
+                                    style: Theme.of(context).textTheme.bodyLarge,
+                                  ),
+                                  const Divider(
+                                    color: Colors.transparent,
+                                  ),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                          child: OutlinedButton(
+                                              onPressed: () async {
+                                                mixpanel!.track('UserLogOut', properties: {"user_id": Hive.box(userDataDB).get("personalInfo")['user_id'], "timeStamp": DateTime.now().toString()});
+                                                mixpanel!.reset();
+                                                await Hive.box(userDataDB).clear();
+                                                await Hive.box(quizDataDB).clear();
+                                                await Hive.box(qualificationDataDB).clear().whenComplete(
+                                                  () {
+                                                    if (!context.mounted) return;
+                                                    context.go("/");
+                                                  },
+                                                );
+                                              },
+                                              child: Text("Yes"))),
+                                      VerticalDivider(
+                                        color: Colors.transparent,
+                                      ),
+                                      Expanded(
+                                          child: FilledButton(
+                                              onPressed: () {
+                                                context.pop();
+                                              },
+                                              child: Text("No")))
+                                    ],
+                                  )
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                    child: Text(
+                      "Log Out",
+                      style: TextStyle(color: Colors.redAccent),
+                    ),
+                  ),
+                  // TextButton(
+                  //   style: TextButton.styleFrom(padding: EdgeInsets.zero),
+                  //   onPressed: () {
+                  //     showDialog(
+                  //       context: context,
+                  //       builder: (context) {
+                  //         return Dialog(
+                  //           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12).r),
+                  //           insetPadding: EdgeInsets.all(24).r,
+                  //           child: Padding(
+                  //             padding: const EdgeInsets.all(12.0).r,
+                  //             child: Column(
+                  //               mainAxisSize: MainAxisSize.min,
+                  //               children: [
+                  //                 Icon(
+                  //                   Icons.warning_amber_rounded,
+                  //                   size: 96.r,
+                  //                   color: Theme.of(context).colorScheme.error,
+                  //                 ),
+                  //                 Divider(
+                  //                   color: Colors.transparent,
+                  //                 ),
+                  //                 Text(
+                  //                   "Are you sure you want to log out?",
+                  //                   style: Theme.of(context).textTheme.bodyLarge,
+                  //                 ),
+                  //                 const Divider(
+                  //                   color: Colors.transparent,
+                  //                 ),
+                  //                 Row(
+                  //                   children: [
+                  //                     Expanded(
+                  //                         child: OutlinedButton(
+                  //                             onPressed: () async {
+                  //                               mixpanel!.track('UserLogOut', properties: {"user_id": Hive.box(userDataDB).get("personalInfo")['user_id'], "timeStamp": DateTime.now().toString()});
+                  //                               mixpanel!.reset();
+                  //                               await Hive.box(userDataDB).clear();
+                  //                               await Hive.box(quizDataDB).clear();
+                  //                               await Hive.box(qualificationDataDB).clear().whenComplete(
+                  //                                 () {
+                  //                                   if (!context.mounted) return;
+                  //                                   context.go("/");
+                  //                                 },
+                  //                               );
+                  //                             },
+                  //                             child: Text("Yes"))),
+                  //                     VerticalDivider(
+                  //                       color: Colors.transparent,
+                  //                     ),
+                  //                     Expanded(
+                  //                         child: FilledButton(
+                  //                             onPressed: () {
+                  //                               context.pop();
+                  //                             },
+                  //                             child: Text("No")))
+                  //                   ],
+                  //                 )
+                  //               ],
+                  //             ),
+                  //           ),
+                  //         );
+                  //       },
+                  //     );
+                  //   },
+                  //   child: Text(
+                  //     "Log Out",
+                  //     style: TextStyle(color: Colors.redAccent),
+                  //   ),
+                  // ),
+                  InkWell(
+                    onTap: () {
+                      launchUrl(
+                        Uri.parse("https://kgamify.in/championshipmaker/delete_account.php"),
+                      );
+                    },
+                    child: Text(
+                      "Delete Account",
+                      style: TextStyle(color: Colors.redAccent),
+                    ),
+                  ),
+                  // TextButton(
+                  //   style: TextButton.styleFrom(padding: EdgeInsets.zero),
+                  //   onPressed: () {
+                  //     launchUrl(
+                  //       Uri.parse("https://kgamify.in/championshipmaker/delete_account.php"),
+                  //     );
+                  //   },
+                  //   child: Text(
+                  //     "Delete Account",
+                  //     style: TextStyle(color: Colors.redAccent),
+                  //   ),
+                  // )
+                ],
+              )),
         ],
       ),
     );
@@ -268,7 +458,7 @@ class _UserProfileState extends State<UserProfile> {
                   currentCountry: country.value,
                   currentCity: city.value,
                   currentState: state.value,
-                  disabledDropdownDecoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: Theme.of(context).colorScheme.inversePrimary.withOpacity(0.7)),
+                  disabledDropdownDecoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: Theme.of(context).colorScheme.inversePrimary.withValues(alpha: .7)),
                   defaultCountry: CscCountry.India,
                   flagState: CountryFlag.SHOW_IN_DROP_DOWN_ONLY,
                   onCityChanged: (value) {
@@ -313,290 +503,290 @@ class _UserProfileState extends State<UserProfile> {
     ));
   }
 
-  Widget _educationInfo() {
-    return SizedBox(
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              AutoSizeText(S.current.qualification, style: TextStyle(fontSize: 18.sp)),
-              if (kDebugMode)
-                IconButton(
-                    onPressed: () {
-                      showModalBottomSheet(
-                        isScrollControlled: true,
-                        isDismissible: false,
-                        sheetAnimationStyle: AnimationStyle(curve: Curves.easeInOut),
-                        context: context,
-                        enableDrag: false,
-                        builder: (context) {
-                          return Material(
-                            child: StatefulBuilder(
-                              builder: (context, setState) {
-                                return Padding(
-                                    padding: const EdgeInsets.all(16),
-                                    child: Form(
-                                      key: formKey,
-                                      child: Padding(
-                                        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewPadding.bottom),
-                                        child: Column(
-                                          // mainAxisSize: MainAxisSize.min,
-                                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                                          children: [
-                                            SizedBox(
-                                              height: AppBar().preferredSize.height / 2,
-                                            ),
-                                            Row(
-                                              mainAxisAlignment: MainAxisAlignment.end,
-                                              children: [IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close))],
-                                            ),
-                                            AutoSizeText("Add Education", style: Theme.of(context).textTheme.titleLarge),
-                                            const Divider(
-                                              color: Colors.transparent,
-                                            ),
-                                            DecoratedBox(
-                                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), border: const Border.fromBorderSide(BorderSide())),
-                                              child: DropdownButtonHideUnderline(
-                                                child: DropdownButton(
-                                                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                                                  isExpanded: true,
-                                                  value: qualification,
-                                                  items: List.generate(
-                                                    qualifications.length,
-                                                    (index) => DropdownMenuItem(
-                                                      value: qualifications.elementAt(index),
-                                                      child: Text(qualifications.elementAt(index)),
-                                                    ),
-                                                  ),
-                                                  onChanged: (value) {
-                                                    setState(() {
-                                                      qualification = value!;
-                                                    });
-                                                  },
-                                                ),
-                                              ),
-                                            ),
-                                            const Divider(
-                                              color: Colors.transparent,
-                                            ),
-                                            TextFormField(
-                                              controller: schoolName,
-                                              decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), label: const Text("School/College Name")),
-                                              validator: (value) {
-                                                if (value == null || value.isEmpty) {
-                                                  return 'Please enter the name of the institution';
-                                                }
-                                                return null;
-                                              },
-                                            ),
-                                            const Divider(
-                                              color: Colors.transparent,
-                                            ),
-                                            TextFormField(
-                                              controller: board,
-                                              decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), label: const Text("University/Board Name")),
-                                              validator: (value) {
-                                                if (value == null || value.isEmpty) {
-                                                  return 'Please enter the name of the University/ Board';
-                                                }
-                                                return null;
-                                              },
-                                            ),
-                                            const Divider(
-                                              color: Colors.transparent,
-                                            ),
-                                            TextFormField(
-                                              controller: passingYear,
-                                              decoration: const InputDecoration(border: OutlineInputBorder(), label: Text("Passing year")),
-                                              keyboardType: TextInputType.number,
-                                              maxLength: 4,
-                                              validator: (value) {
-                                                if (value == null || value.isEmpty) {
-                                                  return 'Please enter valid year';
-                                                }
-                                                return null;
-                                              },
-                                            ),
-                                            const Divider(
-                                              color: Colors.transparent,
-                                            ),
-                                            TextFormField(
-                                              controller: percentage,
-                                              decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), label: const Text("CGPA/Percentage")),
-                                              keyboardType: TextInputType.number,
-                                              validator: (value) {
-                                                if (value == null || value.isEmpty) {
-                                                  return 'Please enter valid number';
-                                                }
-                                                return null;
-                                              },
-                                            ),
-                                            Visibility(
-                                                visible: pursuing,
-                                                child: const Column(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: [],
-                                                )),
-                                            const Divider(
-                                              color: Colors.transparent,
-                                            ),
-                                            OverflowBar(
-                                              alignment: MainAxisAlignment.start,
-                                              children: [
-                                                Checkbox(
-                                                  value: pursuing,
-                                                  onChanged: (value) {
-                                                    setState(() {
-                                                      pursuing = !pursuing;
-                                                    });
-                                                  },
-                                                ),
-                                                const AutoSizeText("Highest Education ?")
-                                              ],
-                                            ),
-                                            FilledButton(
-                                              onPressed: () {
-                                                if (formKey.currentState!.validate()) {
-                                                  AuthHandler().saveUserQualification(qualification, schoolName.text, board.text, int.parse(passingYear.text), double.parse(percentage.text),
-                                                      pursuing ? 1 : 0, Hive.box(userDataDB).get("personalInfo")['user_id']);
-                                                  Hive.box(qualificationDataDB).put(qualification, {
-                                                    "SchoolName": schoolName.text,
-                                                    "Board": board.text,
-                                                    "percentage": percentage.text,
-                                                    "PassingYear": passingYear.text,
-                                                    "HighestEd": pursuing
-                                                  }).whenComplete(
-                                                    () {
-                                                      if (!context.mounted) {
-                                                        return;
-                                                      }
-                                                      Navigator.pop(context);
-                                                      setState(() {});
-                                                    },
-                                                  );
-                                                }
-                                              },
-                                              child: const AutoSizeText("Save"),
-                                            )
-                                          ],
-                                        ),
-                                      ),
-                                    ));
-                              },
-                            ),
-                          );
-                        },
-                      );
-                    },
-                    icon: const Icon(Icons.add))
-            ],
-          ),
-          if (Hive.box(qualificationDataDB).length != 0)
-            ValueListenableBuilder(
-              valueListenable: Hive.box(qualificationDataDB).listenable(),
-              builder: (context, value, child) {
-                return Visibility(
-                  visible: Hive.box(qualificationDataDB).length != 0,
-                  replacement: const Expanded(
-                    child: Center(
-                      child: Text("Nothing to show here."),
-                    ),
-                  ),
-                  child: ListView.builder(
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: Hive.box(qualificationDataDB).length,
-                    shrinkWrap: true,
-                    itemBuilder: (context, index) {
-                      final curr = Hive.box(qualificationDataDB).getAt(index);
-                      final key = Hive.box(qualificationDataDB).keyAt(index);
-                      return Slidable(
-                        endActionPane: ActionPane(motion: const ScrollMotion(), children: [
-                          SlidableAction(
-                            onPressed: (context) {
-                              Hive.box(qualificationDataDB).delete(key);
-                            },
-                            icon: Icons.delete,
-                            label: "Remove",
-                            backgroundColor: Theme.of(context).colorScheme.surface,
-                          ),
-                          SlidableAction(
-                            onPressed: (context) {},
-                            icon: Icons.edit,
-                            label: "Edit",
-                            backgroundColor: Theme.of(context).colorScheme.surface,
-                          ),
-                        ]),
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 8.0),
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(border: Border.fromBorderSide(BorderSide(color: Theme.of(context).colorScheme.secondary)), borderRadius: BorderRadius.circular(10)),
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      Expanded(
-                                          child: AutoSizeText(
-                                        curr['SchoolName'],
-                                        style: TextStyle(fontSize: 16.sp, color: Theme.of(context).colorScheme.secondary, fontWeight: FontWeight.bold),
-                                        maxFontSize: 20,
-                                      )),
-                                      AutoSizeText(
-                                        curr["PassingYear"],
-                                        style: TextStyle(color: Theme.of(context).colorScheme.secondary, fontWeight: FontWeight.bold, fontSize: 16.sp),
-                                        maxFontSize: 20,
-                                      )
-                                    ],
-                                  ),
-                                  const Divider(
-                                    height: 4,
-                                    color: Colors.transparent,
-                                  ),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      AutoSizeText(
-                                        "$key",
-                                        style: Theme.of(context).textTheme.titleMedium,
-                                        maxFontSize: 20,
-                                      ),
-                                      const Divider(
-                                        height: 4,
-                                        color: Colors.transparent,
-                                      ),
-                                      AutoSizeText(
-                                        curr['Board'],
-                                        style: Theme.of(context).textTheme.titleMedium!.copyWith(color: Colors.grey.shade600),
-                                        maxFontSize: 14,
-                                      ),
-                                      AutoSizeText(
-                                        "Percentage/CGPA : ${curr["percentage"]}",
-                                        style: Theme.of(context).textTheme.titleMedium!.copyWith(color: Colors.grey.shade600),
-                                        maxFontSize: 14,
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                );
-              },
-            )
-        ],
-      ),
-    );
-  }
+  // Widget _educationInfo() {
+  //   return SizedBox(
+  //     child: Column(
+  //       children: [
+  //         Row(
+  //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //           children: [
+  //             AutoSizeText(S.current.qualification, style: TextStyle(fontSize: 18.sp)),
+  //             if (kDebugMode)
+  //               IconButton(
+  //                   onPressed: () {
+  //                     showModalBottomSheet(
+  //                       isScrollControlled: true,
+  //                       isDismissible: false,
+  //                       sheetAnimationStyle: AnimationStyle(curve: Curves.easeInOut),
+  //                       context: context,
+  //                       enableDrag: false,
+  //                       builder: (context) {
+  //                         return Material(
+  //                           child: StatefulBuilder(
+  //                             builder: (context, setState) {
+  //                               return Padding(
+  //                                   padding: const EdgeInsets.all(16),
+  //                                   child: Form(
+  //                                     key: formKey,
+  //                                     child: Padding(
+  //                                       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewPadding.bottom),
+  //                                       child: Column(
+  //                                         // mainAxisSize: MainAxisSize.min,
+  //                                         crossAxisAlignment: CrossAxisAlignment.stretch,
+  //                                         children: [
+  //                                           SizedBox(
+  //                                             height: AppBar().preferredSize.height / 2,
+  //                                           ),
+  //                                           Row(
+  //                                             mainAxisAlignment: MainAxisAlignment.end,
+  //                                             children: [IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close))],
+  //                                           ),
+  //                                           AutoSizeText("Add Education", style: Theme.of(context).textTheme.titleLarge),
+  //                                           const Divider(
+  //                                             color: Colors.transparent,
+  //                                           ),
+  //                                           DecoratedBox(
+  //                                             decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), border: const Border.fromBorderSide(BorderSide())),
+  //                                             child: DropdownButtonHideUnderline(
+  //                                               child: DropdownButton(
+  //                                                 padding: const EdgeInsets.symmetric(horizontal: 12),
+  //                                                 isExpanded: true,
+  //                                                 value: qualification,
+  //                                                 items: List.generate(
+  //                                                   qualifications.length,
+  //                                                   (index) => DropdownMenuItem(
+  //                                                     value: qualifications.elementAt(index),
+  //                                                     child: Text(qualifications.elementAt(index)),
+  //                                                   ),
+  //                                                 ),
+  //                                                 onChanged: (value) {
+  //                                                   setState(() {
+  //                                                     qualification = value!;
+  //                                                   });
+  //                                                 },
+  //                                               ),
+  //                                             ),
+  //                                           ),
+  //                                           const Divider(
+  //                                             color: Colors.transparent,
+  //                                           ),
+  //                                           TextFormField(
+  //                                             controller: schoolName,
+  //                                             decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), label: const Text("School/College Name")),
+  //                                             validator: (value) {
+  //                                               if (value == null || value.isEmpty) {
+  //                                                 return 'Please enter the name of the institution';
+  //                                               }
+  //                                               return null;
+  //                                             },
+  //                                           ),
+  //                                           const Divider(
+  //                                             color: Colors.transparent,
+  //                                           ),
+  //                                           TextFormField(
+  //                                             controller: board,
+  //                                             decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), label: const Text("University/Board Name")),
+  //                                             validator: (value) {
+  //                                               if (value == null || value.isEmpty) {
+  //                                                 return 'Please enter the name of the University/ Board';
+  //                                               }
+  //                                               return null;
+  //                                             },
+  //                                           ),
+  //                                           const Divider(
+  //                                             color: Colors.transparent,
+  //                                           ),
+  //                                           TextFormField(
+  //                                             controller: passingYear,
+  //                                             decoration: const InputDecoration(border: OutlineInputBorder(), label: Text("Passing year")),
+  //                                             keyboardType: TextInputType.number,
+  //                                             maxLength: 4,
+  //                                             validator: (value) {
+  //                                               if (value == null || value.isEmpty) {
+  //                                                 return 'Please enter valid year';
+  //                                               }
+  //                                               return null;
+  //                                             },
+  //                                           ),
+  //                                           const Divider(
+  //                                             color: Colors.transparent,
+  //                                           ),
+  //                                           TextFormField(
+  //                                             controller: percentage,
+  //                                             decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), label: const Text("CGPA/Percentage")),
+  //                                             keyboardType: TextInputType.number,
+  //                                             validator: (value) {
+  //                                               if (value == null || value.isEmpty) {
+  //                                                 return 'Please enter valid number';
+  //                                               }
+  //                                               return null;
+  //                                             },
+  //                                           ),
+  //                                           Visibility(
+  //                                               visible: pursuing,
+  //                                               child: const Column(
+  //                                                 mainAxisSize: MainAxisSize.min,
+  //                                                 crossAxisAlignment: CrossAxisAlignment.start,
+  //                                                 children: [],
+  //                                               )),
+  //                                           const Divider(
+  //                                             color: Colors.transparent,
+  //                                           ),
+  //                                           OverflowBar(
+  //                                             alignment: MainAxisAlignment.start,
+  //                                             children: [
+  //                                               Checkbox(
+  //                                                 value: pursuing,
+  //                                                 onChanged: (value) {
+  //                                                   setState(() {
+  //                                                     pursuing = !pursuing;
+  //                                                   });
+  //                                                 },
+  //                                               ),
+  //                                               const AutoSizeText("Highest Education ?")
+  //                                             ],
+  //                                           ),
+  //                                           FilledButton(
+  //                                             onPressed: () {
+  //                                               if (formKey.currentState!.validate()) {
+  //                                                 AuthHandler().saveUserQualification(qualification, schoolName.text, board.text, int.parse(passingYear.text), double.parse(percentage.text),
+  //                                                     pursuing ? 1 : 0, Hive.box(userDataDB).get("personalInfo")['user_id']);
+  //                                                 Hive.box(qualificationDataDB).put(qualification, {
+  //                                                   "SchoolName": schoolName.text,
+  //                                                   "Board": board.text,
+  //                                                   "percentage": percentage.text,
+  //                                                   "PassingYear": passingYear.text,
+  //                                                   "HighestEd": pursuing
+  //                                                 }).whenComplete(
+  //                                                   () {
+  //                                                     if (!context.mounted) {
+  //                                                       return;
+  //                                                     }
+  //                                                     Navigator.pop(context);
+  //                                                     setState(() {});
+  //                                                   },
+  //                                                 );
+  //                                               }
+  //                                             },
+  //                                             child: const AutoSizeText("Save"),
+  //                                           )
+  //                                         ],
+  //                                       ),
+  //                                     ),
+  //                                   ));
+  //                             },
+  //                           ),
+  //                         );
+  //                       },
+  //                     );
+  //                   },
+  //                   icon: const Icon(Icons.add))
+  //           ],
+  //         ),
+  //         if (Hive.box(qualificationDataDB).length != 0)
+  //           ValueListenableBuilder(
+  //             valueListenable: Hive.box(qualificationDataDB).listenable(),
+  //             builder: (context, value, child) {
+  //               return Visibility(
+  //                 visible: Hive.box(qualificationDataDB).length != 0,
+  //                 replacement: const Expanded(
+  //                   child: Center(
+  //                     child: Text("Nothing to show here."),
+  //                   ),
+  //                 ),
+  //                 child: ListView.builder(
+  //                   physics: const NeverScrollableScrollPhysics(),
+  //                   itemCount: Hive.box(qualificationDataDB).length,
+  //                   shrinkWrap: true,
+  //                   itemBuilder: (context, index) {
+  //                     final curr = Hive.box(qualificationDataDB).getAt(index);
+  //                     final key = Hive.box(qualificationDataDB).keyAt(index);
+  //                     return Slidable(
+  //                       endActionPane: ActionPane(motion: const ScrollMotion(), children: [
+  //                         SlidableAction(
+  //                           onPressed: (context) {
+  //                             Hive.box(qualificationDataDB).delete(key);
+  //                           },
+  //                           icon: Icons.delete,
+  //                           label: "Remove",
+  //                           backgroundColor: Theme.of(context).colorScheme.surface,
+  //                         ),
+  //                         SlidableAction(
+  //                           onPressed: (context) {},
+  //                           icon: Icons.edit,
+  //                           label: "Edit",
+  //                           backgroundColor: Theme.of(context).colorScheme.surface,
+  //                         ),
+  //                       ]),
+  //                       child: Padding(
+  //                         padding: const EdgeInsets.only(bottom: 8.0),
+  //                         child: DecoratedBox(
+  //                           decoration: BoxDecoration(border: Border.fromBorderSide(BorderSide(color: Theme.of(context).colorScheme.secondary)), borderRadius: BorderRadius.circular(10)),
+  //                           child: Padding(
+  //                             padding: const EdgeInsets.all(16.0),
+  //                             child: Column(
+  //                               crossAxisAlignment: CrossAxisAlignment.stretch,
+  //                               children: [
+  //                                 Row(
+  //                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //                                   crossAxisAlignment: CrossAxisAlignment.end,
+  //                                   children: [
+  //                                     Expanded(
+  //                                         child: AutoSizeText(
+  //                                       curr['SchoolName'],
+  //                                       style: TextStyle(fontSize: 16.sp, color: Theme.of(context).colorScheme.secondary, fontWeight: FontWeight.bold),
+  //                                       maxFontSize: 20,
+  //                                     )),
+  //                                     AutoSizeText(
+  //                                       curr["PassingYear"],
+  //                                       style: TextStyle(color: Theme.of(context).colorScheme.secondary, fontWeight: FontWeight.bold, fontSize: 16.sp),
+  //                                       maxFontSize: 20,
+  //                                     )
+  //                                   ],
+  //                                 ),
+  //                                 const Divider(
+  //                                   height: 4,
+  //                                   color: Colors.transparent,
+  //                                 ),
+  //                                 Column(
+  //                                   crossAxisAlignment: CrossAxisAlignment.start,
+  //                                   children: [
+  //                                     AutoSizeText(
+  //                                       "$key",
+  //                                       style: Theme.of(context).textTheme.titleMedium,
+  //                                       maxFontSize: 20,
+  //                                     ),
+  //                                     const Divider(
+  //                                       height: 4,
+  //                                       color: Colors.transparent,
+  //                                     ),
+  //                                     AutoSizeText(
+  //                                       curr['Board'],
+  //                                       style: Theme.of(context).textTheme.titleMedium!.copyWith(color: Colors.grey.shade600),
+  //                                       maxFontSize: 14,
+  //                                     ),
+  //                                     AutoSizeText(
+  //                                       "Percentage/CGPA : ${curr["percentage"]}",
+  //                                       style: Theme.of(context).textTheme.titleMedium!.copyWith(color: Colors.grey.shade600),
+  //                                       maxFontSize: 14,
+  //                                     ),
+  //                                   ],
+  //                                 ),
+  //                               ],
+  //                             ),
+  //                           ),
+  //                         ),
+  //                       ),
+  //                     );
+  //                   },
+  //                 ),
+  //               );
+  //             },
+  //           )
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _interestsInfo() {
     return SizedBox(
@@ -632,7 +822,7 @@ class _UserProfileState extends State<UserProfile> {
                           avatar: Icon(interestsIcons[interests.elementAt(index)]),
                           label: Text(interests.elementAt(index)),
                           selected: curr.contains(interests.elementAt(index)),
-                          backgroundColor: Theme.of(context).colorScheme.surface.withOpacity(0.3),
+                          backgroundColor: Theme.of(context).colorScheme.surface.withValues(alpha: .3),
                           side: BorderSide(color: Theme.of(context).colorScheme.secondary),
                           selectedColor: Theme.of(context).colorScheme.secondary,
                           onSelected: (value) {

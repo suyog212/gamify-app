@@ -73,9 +73,9 @@ class _SettingsState extends State<Settings> {
               },
             ),
             ListTile(
-              title: const Text("Liscences"),
+              title: const Text("Licenses"),
               onTap: () {
-                showLicensePage(context: context, applicationVersion: "1.0.0");
+                showLicensePage(context: context);
               },
             )
             // const ListTile(

@@ -6,7 +6,6 @@ import 'package:kGamify/models/questions_models.dart';
 import 'package:kGamify/repositories/question_repository.dart';
 import 'package:kGamify/utils/constants.dart';
 import 'package:no_screenshot/no_screenshot.dart';
-// import 'package:kgamify_new/screens/question_view.dart';
 
 abstract class QuestionsState {}
 
@@ -29,23 +28,24 @@ class QuestionsBloc extends Cubit<QuestionsState> {
 
   QuestionsRepository questionsRepository = QuestionsRepository();
 
-  void getQuestions(int modeId,String champName, int timeMinutes,int noOfQuestions,String gameMode,String champId,int expectedTime,userId,BuildContext context,String teacherName,teacherId,categoryId) async {
+  void getQuestions(int modeId, String champName, int timeMinutes, int noOfQuestions, String gameMode, String champId, int expectedTime, userId, BuildContext context, String teacherName, teacherId,
+      categoryId) async {
     try {
-      List<QuestionsDetailsModel> questionData = await questionsRepository.fetchQuestions(modeId,userId,int.parse(champId)) ?? [];
+      List<QuestionsDetailsModel> questionData = await questionsRepository.fetchQuestions(modeId, userId, int.parse(champId)) ?? [];
       questionData.shuffle();
-      // NoScreenshot.instance.screenshotOff();
-      if(!context.mounted) return;
-      context.go("/questionView",extra: {
-        "champ_name" : champName,
+      NoScreenshot.instance.screenshotOff();
+      if (!context.mounted) return;
+      context.go("/questionView", extra: {
+        "champ_name": champName,
         "champ_id": int.parse(champId),
-        "expected_time" : expectedTime,
-        "game_mode" : gameMode,
-        "questions_list" : questionData.sublist(0,noOfQuestions > questionData.length ? questionData.length : noOfQuestions),
-        "seconds" : timeMinutes,
-        "teacher_name" : teacherName,
-        "modeId" : modeId,
-        "teacherId" : teacherId,
-        "categoryId" : categoryId
+        "expected_time": expectedTime,
+        "game_mode": gameMode,
+        "questions_list": questionData.sublist(0, noOfQuestions > questionData.length ? questionData.length : noOfQuestions),
+        "seconds": timeMinutes,
+        "teacher_name": teacherName,
+        "modeId": modeId,
+        "teacherId": teacherId,
+        "categoryId": categoryId
       });
     } on DioException catch (e) {
       emit(QuestionErrorState(errorStrings(e.type)));

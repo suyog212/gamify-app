@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
@@ -47,9 +46,9 @@ class _AnalyticsState extends State<Analytics> {
           if (kDebugMode)
             IconButton(
                 onPressed: () async {
-                  log(Hive.box(userDataDB).toMap().toString());
-                  debugPrint(kToolbarHeight.toString());
-                  debugPrint("${MediaQuery.sizeOf(context).width - 32}");
+                  // log(Hive.box(userDataDB).toMap().toString());
+                  // debugPrint(kToolbarHeight.toString());
+                  // debugPrint("${MediaQuery.sizeOf(context).width - 32}");
                   // await Hive.box(qualificationDataDB).clear();
                 },
                 icon: const Icon(Icons.terminal))

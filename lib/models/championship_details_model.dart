@@ -9,16 +9,7 @@ class ChampionshipsModel {
   String? champName;
   List<ChampionshipDetails>? championshipDetails;
 
-  ChampionshipsModel(
-      {this.startDate,
-        this.endDate,
-        this.startTime,
-        this.endTime,
-        this.champId,
-        this.categoryId,
-        this.categoryName,
-        this.championshipDetails,
-        this.champName});
+  ChampionshipsModel({this.startDate, this.endDate, this.startTime, this.endTime, this.champId, this.categoryId, this.categoryName, this.championshipDetails, this.champName});
 
   ChampionshipsModel.fromJson(Map<String, dynamic> json) {
     startDate = json['start_date'] ?? "";
@@ -74,31 +65,30 @@ class ChampionshipDetails {
 
   ChampionshipDetails(
       {this.modeId,
-        this.modeName,
-        this.timeMinutes,
-        this.noOfQuestion,
-        this.champId,
-        this.champName,
-        this.startDate,
-        this.endDate,
-        this.startTime,
-        this.endTime,
-        this.categoryId,
-        this.champStatus,
-        this.categoryName,
-        this.categoryStatus,
-        this.teacherId,
-        this.teacherDetailsModel,
-        this.uploadImg,
-        this.teacherName,
-        this.giftImage,
-         this.noOfUsersPlayed,
-         this.userQualification,
-         this.gameModeRules,
-        this.giftDescription,
-        this.questionCount,
-        this.uniqueId
-      });
+      this.modeName,
+      this.timeMinutes,
+      this.noOfQuestion,
+      this.champId,
+      this.champName,
+      this.startDate,
+      this.endDate,
+      this.startTime,
+      this.endTime,
+      this.categoryId,
+      this.champStatus,
+      this.categoryName,
+      this.categoryStatus,
+      this.teacherId,
+      this.teacherDetailsModel,
+      this.uploadImg,
+      this.teacherName,
+      this.giftImage,
+      this.noOfUsersPlayed,
+      this.userQualification,
+      this.gameModeRules,
+      this.giftDescription,
+      this.questionCount,
+      this.uniqueId});
 
   ChampionshipDetails.fromJson(Map<String, dynamic> json) {
     modeId = json['mode_id'];
@@ -167,20 +157,19 @@ class TeacherDetailsModel {
 
   TeacherDetailsModel(
       {required this.teacherId,
-        required this.uniqueId,
-        required this.status,
-        required this.teacherName,
-        required this.username,
-        required this.email,
-        required this.password,
-        required this.phone,
-        required this.institute,
-        required this.department,
-        required this.uploadImg,
-        this.verifyToken,
-        required this.createdAt,
-        this.champsCreated
-      });
+      required this.uniqueId,
+      required this.status,
+      required this.teacherName,
+      required this.username,
+      required this.email,
+      required this.password,
+      required this.phone,
+      required this.institute,
+      required this.department,
+      required this.uploadImg,
+      this.verifyToken,
+      required this.createdAt,
+      this.champsCreated});
 
   TeacherDetailsModel.fromJson(Map<String, dynamic> json) {
     teacherId = json['teacher_id'];

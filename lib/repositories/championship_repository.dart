@@ -1,7 +1,78 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:kGamify/api/api.dart';
 import 'package:kGamify/models/championship_details_model.dart';
 import 'package:kGamify/utils/constants.dart';
+
+// ============================
+// TOP-LEVEL ISOLATE FUNCTIONS
+// ============================
+
+List<ChampionshipDetails> parseChampDetails(Map<String, dynamic> payload) {
+  List<dynamic> details = payload['details'];
+  List<TeacherDetailsModel> teachers = payload['teachers'];
+
+  List<ChampionshipDetails> champDetails = [];
+  for (int i = 0; i < details.length; i++) {
+    final e = details[i];
+    champDetails.add(ChampionshipDetails(
+      startTime: e["start_time"],
+      startDate: e["start_date"],
+      endTime: e["end_time"],
+      endDate: e["end_date"],
+      champName: e["champ_name"],
+      champId: e["champ_id"],
+      categoryName: e["category_name"],
+      categoryId: e["category_id"],
+      timeMinutes: e["time_minutes"],
+      teacherName: e["teacher_name"],
+      teacherId: e["teacher_id"],
+      teacherDetailsModel: teachers[i],
+      noOfQuestion: e["no_of_question"],
+      modeName: e["mode_name"],
+      modeId: e["mode_id"],
+      champStatus: e["champ_status"],
+      categoryStatus: e["category_status"],
+      uploadImg: e["upload_img"],
+      giftImage: e['gift_image'],
+      userQualification: e['user_qualification'],
+      gameModeRules: e['game_mode_rules'],
+      giftDescription: e['gift_description'],
+      noOfUsersPlayed: e['no_of_user_played'],
+      questionCount: e['question_count'],
+      uniqueId: e['unique_id'],
+    ));
+  }
+  return champDetails;
+}
+
+List<ChampionshipsModel> parseChampionshipsModel(Map<String, dynamic> input) {
+  List<dynamic> categories = input['categories'];
+  List<List<ChampionshipDetails>> champDetails = input['champDetails'];
+
+  List<ChampionshipsModel> champModels = [];
+
+  for (int i = 0; i < categories.length; i++) {
+    final item = categories[i];
+    champModels.add(ChampionshipsModel(
+      categoryId: item["category_id"],
+      categoryName: item["category_name"],
+      champId: item["champ_id"],
+      champName: item["champ_name"],
+      endDate: item["end_date"],
+      endTime: item["end_time"],
+      startDate: item["start_date"],
+      startTime: item["start_time"],
+      championshipDetails: champDetails[i],
+    ));
+  }
+
+  return champModels;
+}
+
+// ============================
+// CHAMPIONSHIP REPOSITORY
+// ============================
 
 class ChampionshipRepository {
   final API _api = API();
@@ -10,24 +81,17 @@ class ChampionshipRepository {
     try {
       Response response = await _api.sendRequests.get("/get_category.php");
       List<dynamic> categories = response.data["data"];
-      List<List<ChampionshipDetails>> champDetails = [];
-      List<ChampionshipsModel> champModels = [];
-      for (int i = 0; i < categories.length; i++) {
-        champDetails.add(await fetchChampDetails(int.parse(categories.elementAt(i)["champ_id"])));
-      }
-      for (int i = 0; i < categories.length; i++) {
-        champModels.add(ChampionshipsModel(
-            categoryId: categories.elementAt(i)["category_id"],
-            categoryName: categories.elementAt(i)["category_name"],
-            champId: categories.elementAt(i)["champ_id"],
-            champName: categories.elementAt(i)["champ_name"],
-            endDate: categories.elementAt(i)["end_date"],
-            endTime: categories.elementAt(i)["end_time"],
-            startDate: categories.elementAt(i)["start_date"],
-            startTime: categories.elementAt(i)["start_time"],
-            championshipDetails: champDetails.elementAt(i)));
-      }
-      return champModels;
+
+      List<Future<List<ChampionshipDetails>>> detailFutures = categories.map((e) {
+        return fetchChampDetails(int.parse(e["champ_id"]));
+      }).toList();
+
+      List<List<ChampionshipDetails>> champDetails = await Future.wait(detailFutures);
+
+      return await compute(parseChampionshipsModel, {
+        'categories': categories,
+        'champDetails': champDetails,
+      });
     } on DioException catch (e) {
       throw errorStrings(e.type);
     }
@@ -46,42 +110,17 @@ class ChampionshipRepository {
     try {
       Response response = await _api.sendRequests.get("/fetch_details.php?champ_id=$champId");
       List<dynamic> details = response.data['data'];
-      // List<TeacherDetailsModel> teachModels = [];
-      List<ChampionshipDetails> champDetails = [];
+
       List<Future<TeacherDetailsModel>> teacherFutures = details.map((e) {
         return getTeacherDetails(int.parse(e["teacher_id"]));
       }).toList();
 
       List<TeacherDetailsModel> teachModels = await Future.wait(teacherFutures);
-      for (int i = 0; i < details.length; i++) {
-        champDetails.add(ChampionshipDetails(
-            startTime: details.elementAt(i)["start_time"],
-            startDate: details.elementAt(i)["start_date"],
-            endTime: details.elementAt(i)["end_time"],
-            endDate: details.elementAt(i)["end_date"],
-            champName: details.elementAt(i)["champ_name"],
-            champId: details.elementAt(i)["champ_id"],
-            categoryName: details.elementAt(i)["category_name"],
-            categoryId: details.elementAt(i)["category_id"],
-            timeMinutes: details.elementAt(i)["time_minutes"],
-            teacherName: details.elementAt(i)["teacher_name"],
-            teacherId: details.elementAt(i)["teacher_id"],
-            teacherDetailsModel: teachModels.elementAt(i),
-            noOfQuestion: details.elementAt(i)["no_of_question"],
-            modeName: details.elementAt(i)["mode_name"],
-            modeId: details.elementAt(i)["mode_id"],
-            champStatus: details.elementAt(i)["champ_status"],
-            categoryStatus: details.elementAt(i)["category_status"],
-            uploadImg: details.elementAt(i)["upload_img"],
-            giftImage: details.elementAt(i)['gift_image'],
-            userQualification: details.elementAt(i)['user_qualification'],
-            gameModeRules: details.elementAt(i)['game_mode_rules'],
-            giftDescription: details.elementAt(i)['gift_description'],
-            noOfUsersPlayed: details.elementAt(i)['no_of_user_played'],
-            questionCount: details.elementAt(i)['question_count'],
-            uniqueId: details.elementAt(i)['unique_id']));
-      }
-      return champDetails;
+
+      return await compute(parseChampDetails, {
+        'details': details,
+        'teachers': teachModels,
+      });
     } catch (e) {
       return [ChampionshipDetails(champStatus: "0", categoryStatus: "0")];
     }

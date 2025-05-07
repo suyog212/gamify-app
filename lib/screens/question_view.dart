@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -15,10 +14,10 @@ import 'package:kGamify/models/questions_models.dart';
 import 'package:kGamify/repositories/banner_ad_repository.dart';
 import 'package:kGamify/screens/home_screen.dart';
 import 'package:kGamify/utils/constants.dart';
-import 'package:kGamify/utils/link_classifier.dart';
 import 'package:kGamify/utils/quiz_utils/championship_score_engine.dart';
 import 'package:kGamify/utils/widgets/option_tile.dart';
 import 'package:kGamify/utils/widgets/question_tile.dart';
+import 'package:no_screenshot/no_screenshot.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class QuestionView extends StatefulWidget {
@@ -112,7 +111,7 @@ class _QuestionViewState extends State<QuestionView> {
   void dispose() {
     _questionTimer.stop();
     _quizTimer?.cancel();
-    // NoScreenshot.instance.screenshotOn();
+    NoScreenshot.instance.screenshotOn();
     super.dispose();
   }
 
@@ -135,16 +134,16 @@ class _QuestionViewState extends State<QuestionView> {
               if (kDebugMode)
                 IconButton(
                     onPressed: () async {
-                      debugPrint(await getContentType(
-                          "https://files.porsche.com/filestore/image/multimedia/none/992-gt3-rs-modelimage-sideshot/model/cfbb8ed3-1a15-11ed-80f5-005056bbdc38/porsche-model.png"));
-                      debugPrint(widget.questionsList.toString());
-                      log(totalPenalty.toString());
-                      debugPrint(totalNegativeMarks.toString());
-                      debugPrint(totalBonus.toString());
-                      debugPrint(correctAnswers.toString());
-                      debugPrint(_champScore.toString());
-                      debugPrint(_submittedQuestions.value.toString());
-                      debugPrint(widget.seconds.toString());
+                      // debugPrint(await getContentType(
+                      //     "https://files.porsche.com/filestore/image/multimedia/none/992-gt3-rs-modelimage-sideshot/model/cfbb8ed3-1a15-11ed-80f5-005056bbdc38/porsche-model.png"));
+                      // debugPrint(widget.questionsList.toString());
+                      // log(totalPenalty.toString());
+                      // debugPrint(totalNegativeMarks.toString());
+                      // debugPrint(totalBonus.toString());
+                      // debugPrint(correctAnswers.toString());
+                      // debugPrint(_champScore.toString());
+                      // debugPrint(_submittedQuestions.value.toString());
+                      // debugPrint(widget.seconds.toString());
                     },
                     icon: const Icon(Icons.terminal)),
               if (kDebugMode)
@@ -162,7 +161,7 @@ class _QuestionViewState extends State<QuestionView> {
                         return AlertDialog(
                           content: RichText(
                             text: TextSpan(text: "Are you sure you want to exit the quiz?\n", style: TextStyle(fontSize: 24.sp, color: Theme.of(context).colorScheme.inverseSurface), children: [
-                              TextSpan(text: "Your progress will not be saved.", style: TextStyle(fontSize: 16.sp, color: Theme.of(context).colorScheme.inverseSurface.withOpacity(0.5)))
+                              TextSpan(text: "Your progress will not be saved.", style: TextStyle(fontSize: 16.sp, color: Theme.of(context).colorScheme.inverseSurface.withValues(alpha: .5)))
                             ]),
                             textAlign: TextAlign.center,
                           ),
@@ -462,7 +461,7 @@ class _QuestionViewState extends State<QuestionView> {
                               } else {
                                 if (_selectedAns.value.contains(4)) {
                                   context.read<QuestionViewCubit>().reportWrongQuestion(context, _pageController, int.parse(widget.questionsList.elementAt(index).questionId!), widget.champId,
-                                      int.parse(widget.questionsList.elementAt(index).teacherId!), _answerSubmissionHandler.questionsMarkedWrong);
+                                      int.parse(widget.questionsList.elementAt(index).teacherId!), _answerSubmissionHandler.questionsMarkedWrong, userData.get("personalInfo")['user_id']);
                                 } else if (_scoreEngine.scoreMultiplierCalculator(
                                         widget.questionsList.elementAt(index).correctAnswer!,
                                         _selectedAns.value
@@ -495,7 +494,7 @@ class _QuestionViewState extends State<QuestionView> {
                                           .join(","),
                                       champId: widget.champId);
                                   totalBonus += _questionTimer.elapsed.inSeconds / stringToSeconds(currData.expectedTime!);
-                                  debugPrint("Correct");
+                                  // debugPrint("Correct");
                                 } else {
                                   totalNegativeMarks += 1;
                                   _champScore += _scoreEngine.calculateScoreForCorrectAnswer(stringToSeconds(widget.questionsList.elementAt(index).expectedTime!), _questionTimer.elapsed.inSeconds,
@@ -517,7 +516,7 @@ class _QuestionViewState extends State<QuestionView> {
                                       champId: widget.champId);
                                   totalPenalty += _scoreEngine.calculateScoreForCorrectAnswer(
                                       stringToSeconds(currData.expectedTime!), _questionTimer.elapsed.inSeconds, int.parse(currData.totalCoins!).toDouble(), false, -int.parse(currData.totalCoins!));
-                                  debugPrint("Wrong");
+                                  // debugPrint("Wrong");
                                 }
                               }
                             },

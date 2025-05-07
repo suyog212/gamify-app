@@ -16,7 +16,6 @@ import 'package:kGamify/screens/quiz_results.dart';
 import 'package:kGamify/screens/settings.dart';
 import 'package:kGamify/screens/user_profile.dart';
 import 'package:kGamify/utils/constants.dart';
-// import 'package:upgrader/upgrader.dart';
 
 class AppRouter {
   static final GoRouter _router = GoRouter(
@@ -193,12 +192,12 @@ class GoRouterObserver extends NavigatorObserver {
 
   @override
   void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
-    debugPrint('MyTest didPop: ${route.settings.name}');
+    // debugPrint('MyTest didPop: ${route.settings.name}');
   }
 
   @override
   void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) {
-    debugPrint('MyTest didRemove: ${route.settings.name}');
+    // debugPrint('MyTest didRemove: ${route.settings.name}');
   }
 
   @override
