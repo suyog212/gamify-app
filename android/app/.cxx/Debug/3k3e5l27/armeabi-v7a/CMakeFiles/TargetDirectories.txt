@@ -1,0 +1,2 @@
+C:/Users/SUYOG/Downloads/gamify-app-main/android/app/.cxx/Debug/3k3e5l27/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/SUYOG/Downloads/gamify-app-main/android/app/.cxx/Debug/3k3e5l27/armeabi-v7a/CMakeFiles/rebuild_cache.dir

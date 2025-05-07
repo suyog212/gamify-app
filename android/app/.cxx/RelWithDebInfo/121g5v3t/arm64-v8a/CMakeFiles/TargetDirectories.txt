@@ -1,0 +1,2 @@
+C:/Users/SUYOG/Downloads/gamify-app-main/android/app/.cxx/RelWithDebInfo/121g5v3t/arm64-v8a/CMakeFiles/edit_cache.dir
+C:/Users/SUYOG/Downloads/gamify-app-main/android/app/.cxx/RelWithDebInfo/121g5v3t/arm64-v8a/CMakeFiles/rebuild_cache.dir
